@@ -1,0 +1,45 @@
+@startuml
+left to right direction
+
+:Actor: --> (StaffManagment)
+:Actor: --> (Create)
+:Actor: --> (Analysis)
+
+(StaffManagment) --> (Hire) : <<ext>>
+(StaffManagment) --> (Fire) : <<ext>>
+(StaffManagment) --> (Appoint to game) : <<ext>>
+
+(Create) <-- (Genre) : <<inc>>
+(Create) <-- (Staff) : <<inc>>
+(Create) <-- (Publish) : <<inc>>
+(Create) --> (Investitions) : <<ext>>
+
+(Analysis) --> (Count) : <<ext>>
+(Analysis) --> (MaxIncome) : <<ext>>
+(Analysis) --> (MinIncome) : <<ext>>
+(Analysis) --> (Income) : <<ext>>
+(Analysis) --> (MaxDonator) : <<ext>>
+
+(Publish) <-- (Choose Publisher) : <<inc>>
+
+
+
+
+:Actor: as "Game Studio"
+(StaffManagment) as "Staff managment"
+(Create) as "Create game"
+(Analysis) as "Analys recent games"
+(Publish) as "Publish game"
+(Genre) as "Choose Genre"
+(Staff) as "Choose team members"
+(Investitions) as "Find Investors"
+(Count) as "Count games"
+(MaxIncome) as "Max Income"
+(MinIncome) as "Min Income"
+(Income) as "Check incomes for each game"
+(MaxDonator) as "Top 1 Donater"
+(Choose Publisher) as "Choose Publisher"
+
+
+
+@enduml

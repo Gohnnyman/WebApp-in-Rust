@@ -1,0 +1,66 @@
+@startuml
+left to right direction
+
+map Games {
+    id => UNIQUEIDENTIFIER
+    Name => NVARCHAR(100)
+    Genre => NVARCHAR(100)
+    Release date => DATE
+    Prime cost => MONEY
+    Publisher_id => INT 
+    Cost => MONEY
+    Is_Subscribable => BOOL
+}
+
+map Publishers {
+    id => UNIQUEIDENTIFIER
+    Name => NVARCHAR(100)
+    Price => MONEY
+    Popularity (0 to 10) => TINYINT
+}
+
+map Investors {
+    id => UNIQUEIDENTIFIER
+    Name => NVARCHAR(100)
+    Is_Company => BOOL
+}
+
+map Staff {
+    id => UNIQUEIDENTIFIER
+    Name => NVARCHAR(100)
+    Birth => DATE
+}
+
+map Donations {
+    id => UNIQUEIDENTIFIER
+    Name => NVARCHAR(100)
+    Game_id => INT
+    Amount => MONEY
+}
+
+map Investor_Game {
+    id => UNIQUEIDENTIFIER
+    Investor_id => INT
+    Game_id => INT
+    Share (%) => INT
+    Invested => MONEY
+}
+
+map Jobs {
+    id => UNIQUEIDENTIFIER
+    Game_id => INT
+    Staff_id => INT
+    Position => NVARCHAR(100)
+    First_Working_Day => DATE
+    Last_Working_day => DATE
+    Salary => MONEY 
+}
+
+Publishers::id --> Games::Publisher_id
+Investors::id --> Investor_Game::Investor_id
+Games::id --> Donations::Game_id
+Games::id --> Investor_Game::Game_id
+Games::id --> Jobs::Game_id
+Staff::id --> Jobs::Staff_id
+
+@enduml
