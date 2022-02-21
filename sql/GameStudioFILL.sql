@@ -48,7 +48,7 @@ VALUES
 ('Jolyne Kujo', '2004.05.17')
 GO
 
-INSERT INTO Investor_Game 
+INSERT INTO Investors_Games 
 VALUES 
 (1, 1, 10, 30000),
 (2, 1, 1, 3000),
@@ -59,16 +59,24 @@ VALUES
 (8, 6, 100, 1)
 GO
 
-INSERT INTO Donations 
+INSERT INTO Users 
 VALUES 
-('Andrei Petrenko', 1, 28),
-('Yana Kriak', 4, 123),
-('Shurik Fedorovskyi', 1, 0.59),
-('Pavel', 6, 338),
-('Anonim', 8, 2),
-('Kitten Miuki', 5, 125),
-('Johnny Anderson', 4, 30)
+('Andrei Petrenko'),
+('Yana Kriak'),
+('Shurik Fedorovskyi'),
+('Pavel'),
+('Anonim'),
+('Kitten Miuki'),
+('Johnny Anderson')
 GO
+
+INSERT INTO Donations 
+VALUES
+(3, 1, 50, "2004-05-23T14:25:10"),
+(1, 2, 150, "2020-07-22T21:13:01"),
+(4, 3, 94, "2022-01-11T10:11:59"),
+(1, 2, 299, "2021-01-23T05:12:41"),
+(2, 5, 254, "2021-02-11T13:19:19")
 
 INSERT INTO Jobs
 VALUES
@@ -92,7 +100,7 @@ SELECT * FROM Publishers
 SELECT * FROM Games
 SELECT * FROM Investors
 SELECT * FROM Staff
-SELECT * FROM Investor_Game
+SELECT * FROM Investors_Games
 SELECT * FROM Donations
 SELECT * FROM Jobs
 GO

@@ -9,7 +9,7 @@ map Games {
     Prime cost => MONEY
     Publisher_id => INT 
     Cost => MONEY
-    Is_Subscribable => BOOL
+    Is_subscribable => BOOL
 }
 
 map Publishers {
@@ -22,7 +22,7 @@ map Publishers {
 map Investors {
     id => UNIQUEIDENTIFIER
     Name => NVARCHAR(100)
-    Is_Company => BOOL
+    Is_company => BOOL
 }
 
 map Staff {
@@ -33,16 +33,17 @@ map Staff {
 
 map Donations {
     id => UNIQUEIDENTIFIER
-    Name => NVARCHAR(100)
+    User_id => INT
     Game_id => INT
     Amount => MONEY
+    Donation_time => DATETIME
 }
 
-map Investor_Game {
+map Investors_Games {
     id => UNIQUEIDENTIFIER
     Investor_id => INT
     Game_id => INT
-    Share (%) => INT
+    Share => INT
     Invested => MONEY
 }
 
@@ -51,16 +52,25 @@ map Jobs {
     Game_id => INT
     Staff_id => INT
     Position => NVARCHAR(100)
-    First_Working_Day => DATE
-    Last_Working_day => DATE
+    First_working_day => DATE
+    Last_working_day => DATE
     Salary => MONEY 
 }
 
+map Users {
+    id => UNIQUEIDENTIFIER
+    Nickname => NVARCHAR(100)
+    Registration_date => DATE
+}
+
 Publishers::id --> Games::Publisher_id
-Investors::id --> Investor_Game::Investor_id
+Investors::id --> Investors_Games::Investor_id
 Games::id --> Donations::Game_id
-Games::id --> Investor_Game::Game_id
+Games::id --> Investors_Games::Game_id
 Games::id --> Jobs::Game_id
 Staff::id --> Jobs::Staff_id
+Donations::User_id <-- Users::id
+
+
 
 @enduml
