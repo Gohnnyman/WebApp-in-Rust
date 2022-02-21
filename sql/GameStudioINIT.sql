@@ -1,4 +1,4 @@
-USE GameStudio
+йUSE GameStudio
 GO
 
 
