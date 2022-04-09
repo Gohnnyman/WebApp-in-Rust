@@ -1,12 +1,12 @@
 [package]
-name = "game_studio_database"
+name = "web_app"
 version = "0.1.0"
 edition = "2018"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
-tiberius = {version = "0.7.1", features = ["chrono"]}
-async-std = "1.10.0"
+# tiberius = {version = "0.7.1", features = ["chrono"]}
+# async-std = "1.10.0"
+# chrono = "0.4"
 anyhow = "1.0.0"
-chrono = "0.4"
+diesel = {version = "1.4.8", features = ["postgres"]}
+dotenv = "0.15.0"

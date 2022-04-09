@@ -1,36 +1,27 @@
-mod sql_server;
+#[macro_use]
+extern crate diesel;
 
-use sql_server::SqlServer;
-use async_std::task;
+use anyhow::Result;
+use schema::games::dsl::*;
+use models::*;
+use dotenv::dotenv;
+use sql_connector::Connector;
+use diesel::prelude::*;
 
-fn main() {
+mod sql_connector;
+mod models;
+mod schema;
 
-    let mut buffer = String::new();
+fn main() -> Result<()> {
+    dotenv().ok();
 
-    let mut sql_server: SqlServer = 
-        match task::block_on(SqlServer::new("GameStudio", "SuperDB228")) {
-            Ok(t) => t,
-            Err(f) => {panic!("{:?}", f);}
-        };
+    let sq_connector = Connector::new(std::env::var("DATABASE_URL").unwrap())?;
 
 
-        
-        
-    while true {
-        std::io::stdin().read_line(&mut buffer).expect("Failed to read from stdin!");
-        let rslt = task::block_on(async {
-            match buffer.trim().to_lowercase().as_str() {
-                "select games" => sql_server.get_games().await,
-                "select investors" => sql_server.get_investors().await,
-                "select donations" => sql_server.get_donations().await,
-                "select investor_game" => sql_server.get_investor_game().await,
-                "select jobs" => sql_server.get_jobs().await,
-                "select publishers" => sql_server.get_publishers().await,
-                "select staff" => sql_server.get_staff().await,
-                _ => Ok(())
-            }
-        });
-    }
+
     
-
+        
+        
+    
+    Ok(())
 }

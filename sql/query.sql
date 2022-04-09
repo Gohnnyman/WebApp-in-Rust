@@ -1,5 +1,2 @@
-use GameStudio
 
-SELECT * FROM [Games]
-
-
+SELECT * FROM Games;

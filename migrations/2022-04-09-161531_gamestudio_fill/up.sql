@@ -21,6 +21,7 @@ VALUES
 ('World Of Warcraft', 'RPG', '2012.10.29', 100000, 5, 10, true);
 
 
+
 INSERT INTO Investors (name, is_company)
 VALUES 
 ('Johnny James', false),
@@ -91,15 +92,3 @@ VALUES
 (2, 5, 'TeamLead', '2021.5.21', NULL, 5000),
 (1, 6, 'HR', '2020.01.1', NULL, 800),
 (7, 6, 'HR', '2020.01.1', NULL, 800);
-
-
-
-SELECT * FROM Publishers;
-SELECT * FROM Games;
-SELECT * FROM Investors;
-SELECT * FROM Staff;
-SELECT * FROM Investors_Games;
-SELECT * FROM Users;
-SELECT * FROM Donations;
-SELECT * FROM Jobs;
-
