@@ -1,5 +1,6 @@
 use diesel::Queryable;
 use diesel::pg::data_types::{PgMoney, PgDate, PgTimestamp};
+use serde::Serialize;
 
 #[derive(Queryable)]
 pub struct Publishers {
@@ -10,17 +11,46 @@ pub struct Publishers {
 }
 
 
-#[derive(Queryable, Debug)]
+#[derive(Queryable, Debug, Clone)]
 pub struct Games {
-    id: i32,
-    name: String,
-    genre: String,
-    release_PgDate: PgDate,
-    prime_cost: PgMoney,
-    publisher_id: Option<i32>,
-    cost: PgMoney,
-    is_subscribable: bool
+    pub id: i32,
+    pub name: String,
+    pub genre: String,
+    pub release_date: PgDate,
+    pub prime_cost: PgMoney,
+    pub publisher_id: Option<i32>,
+    pub cost: PgMoney,
+    pub is_subscribable: bool
 }
+
+#[derive(Serialize)]
+pub struct GamesSer {
+    pub id: i32,
+    pub name: String,
+    pub genre: String,
+    pub release_date: i32,
+    pub prime_cost: i64,
+    pub publisher_id: Option<i32>,
+    pub cost: i64,
+    pub is_subscribable: bool
+}
+
+impl GamesSer {
+    pub fn from(games: Games) -> Self {
+        GamesSer { 
+            id: games.id,
+            name: games.name,
+            genre: games.genre,
+            release_date: games.release_date.0,
+            prime_cost: games.prime_cost.0,
+            publisher_id: games.publisher_id,
+            cost: games.cost.0,
+            is_subscribable: games.is_subscribable
+        }
+    }
+}
+
+
 
 #[derive(Queryable)]
 pub struct Staff {

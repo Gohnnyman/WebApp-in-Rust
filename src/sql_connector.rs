@@ -2,7 +2,7 @@ use diesel::prelude::*;
 use anyhow::Result;
 
 pub struct Connector {
-    connection: PgConnection
+    pub connection: PgConnection
 }
 
 impl Connector {

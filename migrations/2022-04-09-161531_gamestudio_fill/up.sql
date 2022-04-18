@@ -14,7 +14,7 @@ VALUES
 ('GTA The Trilogy', 'Action', '2021.11.11', 1, 6, 60, false),
 ('FNAF5', 'Horror', '2022.01.20', 30000, 1, 20, false),
 ('MARIO 1337', 'Platformer', '2041.05.1', 25000, 2, 49, true),
-('FIFA 5', 'Simulator', '2019.07.6', 450000, 6, 49, false),
+('ФІФА 5', 'Simulator', '2019.07.6', 450000, 6, 49, false),
 ('The Sims 4', 'Simulator', '2016.11.10', 75000, 6, 30, false),
 ('The Legend Of Zelda', 'Open World', '2020.4.19', 200000, 2, 40, false),
 ('Sea of thieves', 'Open World', '2018.3.20', 180000, 1, 42, false),
