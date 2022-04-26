@@ -1,0 +1,38 @@
+h1 {
+  color: blue;
+}
+
+body {
+  color: #313b2a;
+}
+
+th, td {
+  text-align: center;
+  color: #313b2a;
+  border-bottom: 1px solid #8686869d;
+}
+
+th {
+  background-color: #72F416;
+}
+
+tr:nth-child(odd) {background-color: #72db2770;}
+tr:hover {background-color: #f86d2c88}
+
+table { 
+  padding: 0px;
+  width: 100%;
+  border-collapse: collapse;
+}
+
+footer {
+  padding-top: 1%;
+}
+
+.error {
+  color: #f86d2c
+}
+
+.success {
+  color: #55b113
+}
