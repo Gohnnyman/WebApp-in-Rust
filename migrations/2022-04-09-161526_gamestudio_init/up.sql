@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS Games (
     Genre VARCHAR(100) NOT NULL, 
     Release_date DATE NOT NULL,
     Prime_cost MONEY NOT NULL, 
-    Publisher_id INT REFERENCES Publishers(ID) ON DELETE CASCADE,
+    Publisher_id INT REFERENCES Publishers(ID) ON DELETE CASCADE NOT NULL,
     Cost MONEY NOT NULL, 
     Is_subscribable BOOLEAN NOT NULL DEFAULT false
 );

@@ -3,3 +3,6 @@ template_dir = "templates"
 port = 8080
 template_dir = "front/templates"
 # address = "127.0.0.1"
+
+[global.databases]
+gamestudio = { url = "postgres://gohnny@localhost/gamestudio" }

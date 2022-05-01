@@ -33,7 +33,7 @@
         <input type="text" id="genre" name="add.genre"><br>
 
         <label for="release_date">Release date:</label>
-        <input type="text" id="release_date" name="add.release_date"><br>
+        <input type="date" id="release_date" name="add.release_date"><br>
         
         <label for="prime_cost">Prime cost:</label>
         <input type="text" id="prime_cost" name="add.prime_cost"><br>
@@ -45,7 +45,7 @@
         <input type="text" id="cost" name="add.cost"><br>
         
         <label for="is_subsrubable">Is Sibsribable:</label>
-        <input type="text" id="is_subsrubable" name="add.is_subscribable"><br>
+        <input type="checkbox" id="is_subsrubable" name="add.is_subscribable"><br>
         
         <input type="submit" value="Add" name="submit_button">
     </form>

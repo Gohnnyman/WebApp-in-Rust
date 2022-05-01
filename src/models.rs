@@ -17,7 +17,7 @@ pub struct Games {
     pub genre: String,
     pub release_date: PgDate,
     pub prime_cost: PgMoney,
-    pub publisher_id: Option<i32>,
+    pub publisher_id: i32,
     pub cost: PgMoney,
     pub is_subscribable: bool
 }

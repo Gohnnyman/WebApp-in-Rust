@@ -15,7 +15,7 @@ table! {
         genre -> Varchar,
         release_date -> Date,
         prime_cost -> Money,
-        publisher_id -> Nullable<Int4>,
+        publisher_id -> Int4,
         cost -> Money,
         is_subscribable -> Bool,
     }
