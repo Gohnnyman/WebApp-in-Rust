@@ -1,61 +1,29 @@
 {% extends "base" %}
 
 {% block content %}
-    <h3> Here are your {{ table }} table: </h3>
+    <h3> {{ table }} </h3>
     <table>
         <th> Id </th>    
-        <th> Name </th>    
-        <th> Genre </th>    
-        <th> Release date </th>     
-        <th> Prime cost </th>    
-        <th> Publisher id </th>    
-        <th> Cost </th>    
-        <th> Is Subsribable </th>    
+        <th> Ім'я </th>    
+        <th> Жанр </th>    
+        <th> Дата виходу </th>     
+        <th> Ціна розробки </th>    
+        <th> Ціна </th>    
+        <th> По підписці </th>    
+        <th> </th>
         {% for game in values %}
             <tr>
                 <td> {{game.id}} </td>
                 <td> {{game.name}} </td>
                 <td> {{game.genre}} </td>
                 <td> {{game.release_date}} </td>
-                <td> {{game.prime_cost}} </td>
-                <td> {{game.publisher_id}} </td>
-                <td> {{game.cost}} </td>
-                <td> {{game.is_subscribable}} </td>
+                <td> {{game.prime_cost}} &#8372; </td>
+                <td> {{game.cost}} &#8372; </td>
+                <td> {% if game.is_subscribable %} [X] {% else %} [] {% endif %} </td>
+                <td> <a href="/games/edit?id={{ game.id }}" class="button"> Змінити </a> </td>
             </tr>
         {% endfor %}
     </table>
 
-    <form action="/games" method="post", enctype="multipart/form-data">   
-        <label for="name">Name:</label>
-        <input type="text" id="name" name="add.name"><br>
-
-        <label for="genre">Genre:</label>
-        <input type="text" id="genre" name="add.genre"><br>
-
-        <label for="release_date">Release date:</label>
-        <input type="date" id="release_date" name="add.release_date"><br>
-        
-        <label for="prime_cost">Prime cost:</label>
-        <input type="text" id="prime_cost" name="add.prime_cost"><br>
-
-        <label for="publiseher_id">Publisher id:</label>
-        <input type="text" id="publiseher_id" name="add.publisher_id"><br>
-        
-        <label for="cost">Cost:</label>
-        <input type="text" id="cost" name="add.cost"><br>
-        
-        <label for="is_subsrubable">Is Sibsribable:</label>
-        <input type="checkbox" id="is_subsrubable" name="add.is_subscribable"><br>
-        
-        <input type="submit" value="Add" name="submit_button">
-    </form>
-
-    <br><br>
-
-    <form action="/games" method="post", enctype="multipart/form-data">   
-        <label for="delete.id">Id: </label>
-        <input type="text" id="id" name="delete.id"><br>
-        <input type="submit" value="Delete", name="submit_button">
-    </form>
-
+    <a href="/games/add" class="button" style="margin-top: 30px"> Додати </a>
 {% endblock content %}

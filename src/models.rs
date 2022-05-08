@@ -1,14 +1,13 @@
+use diesel::pg::data_types::{PgDate, PgMoney, PgTimestamp};
 use diesel::Queryable;
-use diesel::pg::data_types::{PgMoney, PgDate, PgTimestamp};
 
 #[derive(Queryable)]
 pub struct Publishers {
     id: i32,
     name: String,
     price: PgMoney,
-    popularity: i16
+    popularity: i16,
 }
-
 
 #[derive(Queryable, Debug, Clone)]
 pub struct Games {
@@ -19,15 +18,14 @@ pub struct Games {
     pub prime_cost: PgMoney,
     pub publisher_id: i32,
     pub cost: PgMoney,
-    pub is_subscribable: bool
+    pub is_subscribable: bool,
 }
-
 
 #[derive(Queryable)]
 pub struct Staff {
     id: i32,
     name: String,
-    birth: PgDate 
+    birth: PgDate,
 }
 
 #[derive(Queryable)]
@@ -38,14 +36,14 @@ pub struct Jobs {
     position: String,
     first_work_day: PgDate,
     last_work_day: PgDate,
-    salary: PgMoney
+    salary: PgMoney,
 }
 
 #[derive(Queryable)]
 pub struct Users {
     id: i32,
     nickname: String,
-    registration_PgDate: PgDate
+    registration_date: PgDate,
 }
 
 #[derive(Queryable)]
@@ -54,14 +52,14 @@ pub struct Donations {
     user_id: i32,
     game_id: i32,
     amount: PgMoney,
-    donation_time: PgTimestamp 
+    donation_time: PgTimestamp,
 }
 
 #[derive(Queryable)]
 pub struct Investors {
     id: i32,
     name: String,
-    is_company: bool
+    is_company: bool,
 }
 
 #[derive(Queryable)]
@@ -70,5 +68,5 @@ pub struct InvestorsGames {
     investor_id: i32,
     game_id: i32,
     share: i16,
-    invested: PgMoney 
+    invested: PgMoney,
 }

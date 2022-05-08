@@ -3,15 +3,12 @@
   <head>
     <meta charset="utf-8" />
     <title>Tera Demo</title>
-    <link rel="stylesheet" type="text/css" href="style.css">
+    <link rel="stylesheet" type="text/css" href="/style.css">
   </head>
   <body>
-    <a href="/tera/hello/Unknown">Hello</a> | <a href="/tera/about">About</a>
-
     {% block content %}{% endblock content %}
     
-
-    {% for message in messages %}
+    {% for message in content %}
         <p class="success"> {{ message }} </p>
     {% endfor %}
 
@@ -20,7 +17,8 @@
     {% endfor %}
 
     <footer>
-      <a href="/">Home</a>
-    </footer>
+      <a href="/">Головна</a>
+      <a onclick="history.back()" href=".">Назад</a>
+      </footer>
   </body>
 </html>

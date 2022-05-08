@@ -12,5 +12,5 @@ pub enum ServerError {
     InvalidDate,
 
     #[error("Ці поля мають бути заповнені: {0:?}")]
-    NullValues(Vec<String>)
+    NullValues(Vec<String>),
 }
