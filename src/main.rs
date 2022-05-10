@@ -26,7 +26,21 @@ fn start() -> _ {
     rocket::build()
         .mount(
             "/",
-            routes![games, games_delete_post, games_edit, games_edit_post, games_add, games_add_post],
+            routes![
+                games,
+                games_delete_post,
+                games_edit,
+                games_edit_post,
+                games_add,
+                games_add_post,
+
+                publishers,
+                publishers_delete_post,
+                publishers_edit,
+                publishers_edit_post,
+                publishers_add,
+                publishers_add_post
+            ],
         )
         .mount("/", FileServer::from(relative!("front/static")))
         .attach(Template::fairing())

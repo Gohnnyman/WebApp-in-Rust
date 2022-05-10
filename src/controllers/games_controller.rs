@@ -90,13 +90,12 @@ impl GamesControl {
         use crate::schema::games::dsl::*;
 
         let results = conn
-            .run(move |sql_conn| -> Result<Vec<Games>> { Ok(games.order(id.asc()).load::<Games>(sql_conn)?)})
+            .run(move |sql_conn| -> Result<Vec<Games>> {
+                Ok(games.order(id.asc()).load::<Games>(sql_conn)?)
+            })
             .await?;
 
-        Ok(results
-            .iter()
-            .map(|result| GamesControl::from(result.clone()))
-            .collect())
+        Ok(results.into_iter().map(GamesControl::from).collect())
     }
 
     pub async fn get_game_by_id(conn: &DBConnection, id_for_lookup: i32) -> Result<GamesControl> {

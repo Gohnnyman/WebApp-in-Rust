@@ -1,0 +1,25 @@
+{% extends "base" %}
+
+{% block content %}
+
+    <form action="/publishers/edit?id={{ values.0.id }}" method="post", enctype="multipart/form-data">   
+        <label for="name">Ім'я:</label>
+        <input type="text" id="name" name="add.name" value="{{ values.0.name }}"><br>
+
+        <label for="price"> Ціна:</label>
+        <input type="text" id="price" name="add.price" value="{{ values.0.price }}"><br>
+        
+        <label for="popularity"> Популярність:</label>
+        <select id="popularity" name="add.popularity">
+          {% for i in range(start=1, end=11)%}
+            <option value="{{loop.index}}" {% if values.0.popularity == loop.index %} selected {%endif%}>{{loop.index}}</option>
+          {% endfor%}
+        </select><br>
+        <input type="submit" value="Змінити" name="submit_button">
+    </form>
+
+    <form action="/publishers/delete?id={{ values.0.id }}" method="post", enctype="multipart/form-data">   
+        <input type="submit" value="Видалити", name="submit_button">
+    </form>
+
+{% endblock content %}

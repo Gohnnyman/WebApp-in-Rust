@@ -1,0 +1,23 @@
+{% extends "base" %}
+
+{% block content %}
+    <h3> {{ table }} </h3>
+    <table>
+        <th> Id </th>    
+        <th> Ім'я </th>    
+        <th> Ціна </th>    
+        <th> Популярність </th>     
+        <th> </th>
+        {% for game in values %}
+            <tr>
+                <td> {{game.id}} </td>
+                <td> {{game.name}} </td>
+                <td> {{game.price}} </td>
+                <td> {{game.popularity}} </td>
+                <td> <a href="/publishers/edit?id={{ game.id }}" class="button"> Змінити </a> </td>
+            </tr>
+        {% endfor %}
+    </table>
+
+    <a href="/publishers/add" class="button" style="margin-top: 30px"> Додати </a>
+{% endblock content %}

@@ -1,6 +1,12 @@
-use crate::controllers::{GamesControl, NewGame};
+use crate::controllers::{
+    GamesControl, 
+    NewGame,
+    PublishersControl,
+    NewPublisher,
+};
 use crate::errors::ServerError;
 use crate::DBConnection;
+use anyhow::Result;
 use rocket::form::{self, Contextual, Form, FromForm};
 use rocket::response::Redirect;
 use rocket::serde::Serialize;
@@ -26,8 +32,20 @@ pub struct AddGame {
 }
 
 #[derive(Debug, FromForm)]
-pub struct GamesForm<'a> {
-    add: form::Result<'a, AddGame>,
+pub struct GamesForm<'f> {
+    add: form::Result<'f, AddGame>,
+}
+
+#[derive(Debug, FromForm)]
+pub struct AddPublisher {
+    pub name: String,
+    pub price: f64,
+    pub popularity: i16,
+}
+
+#[derive(Debug, FromForm)]
+pub struct PublishersForm<'f> {
+    add: form::Result<'f, AddPublisher>,
 }
 
 #[get("/games")]
@@ -180,5 +198,156 @@ pub async fn games_delete_post<'r>(
     GamesControl::delete_game(&conn, id).await.unwrap();
 
     Ok(Redirect::to(uri!(games)))  
+}
+
+
+#[get("/publishers")]
+pub async fn publishers(conn: DBConnection) -> Template {
+    let ctx = CustomContext {
+        values: PublishersControl::get_publishers(&conn).await.unwrap(),
+        table: "Publishers",
+        errors: vec![],
+        content: vec![],
+    };
+
+    Template::render("publishers", ctx)
+}
+
+
+#[get("/publishers/add")]
+pub async fn publishers_add() -> Template {
+    let ctx = CustomContext::<String> {
+        values: vec![],
+        table: "Publishers",
+        errors: vec![],
+        content: vec![],
+    };
+
+    Template::render("publishers_add", ctx)
+}
+
+#[post("/publishers/add", data = "<form>")]
+pub async fn publishers_add_post<'r>(
+    conn: DBConnection,
+    mut form: Form<Contextual<'r, PublishersForm<'r>>>,
+) -> Result<Redirect, Template> {
+    let publisher = std::mem::replace(&mut form.value, None).unwrap().add;
+    let mut errs = Vec::new();
+
+    match publisher {
+        Err(errors) => {
+            let names = errors
+                .iter()
+                .map(|err| {
+                    let name = err.name.as_ref().unwrap().to_string();
+                    name.rsplit_once('.')
+                        .unwrap()
+                        .1
+                        .replace("_", " ")
+                        .to_string()
+                })
+                .collect();
+            errs.push(ServerError::NullValues(names).to_string());
+        }, 
+        Ok(publisher) => {
+            let publisher = NewPublisher::from(publisher);
+            if let Err(err) = publisher {
+                errs.push(err.to_string());
+            } else {
+                if let Some(err) = PublishersControl::add_publisher(&conn, publisher.unwrap()).await.err()
+                {
+                    errs.push(err.to_string());
+                }
+            }
+        }
+    }
+
+    if !errs.is_empty() {
+        let ctx = CustomContext::<String> {
+            values: vec![],
+            table: "Publishers",
+            errors: errs,
+            content: vec![],
+        };
+        Err(Template::render("publishers_add", ctx))
+    } else {
+        Ok(Redirect::to(uri!(publishers)))
+    }
+}
+
+#[get("/publishers/edit?<id>")]
+pub async fn publishers_edit<'r>(conn: DBConnection, id: i32) -> Template {
+    let publisher = PublishersControl::get_publisher_by_id(&conn, id).await.unwrap();
+
+    let ctx = CustomContext {
+        values: vec![publisher],
+        table: "Publishers",
+        errors: vec![],
+        content: vec![],
+    };
+
+    Template::render("publishers_edit", ctx)
+}
+
+#[post("/publishers/edit?<id>", data = "<form>")]
+pub async fn publishers_edit_post<'r>(
+    conn: DBConnection,
+    id: i32,
+    mut form: Form<Contextual<'r, PublishersForm<'r>>>,
+) -> Result<Redirect, Template> {
+    let publisher = std::mem::replace(&mut form.value, None).unwrap().add;
+    let mut errs = Vec::new();
+
+    match publisher {
+        Err(errors) => {
+            let names = errors
+                .iter()
+                .map(|err| {
+                    let name = err.name.as_ref().unwrap().to_string();
+                    name.rsplit_once('.')
+                        .unwrap()
+                        .1
+                        .replace("_", " ")
+                        .to_string()
+                })
+                .collect();
+            errs.push(ServerError::NullValues(names).to_string());
+        }, 
+        Ok(publisher) => {
+            let publisher = NewPublisher::from(publisher);
+            if let Err(err) = publisher {
+                errs.push(err.to_string());
+            } else {
+                if let Some(err) = PublishersControl::update_publisher(&conn, id, publisher.unwrap()).await.err()
+                {
+                    errs.push(err.to_string());
+                }
+            }
+        }
+    }
+
+    if !errs.is_empty() {
+        let publisher = PublishersControl::get_publisher_by_id(&conn, id).await.unwrap();
+        let ctx = CustomContext {
+            values: vec![publisher],
+            table: "Publishers",
+            errors: errs,
+            content: vec![],
+        };
+        Err(Template::render("publishers_edit", ctx))
+    } else {
+        Ok(Redirect::to(uri!(publishers)))
+    }
+}
+
+#[post("/publishers/delete?<id>")]
+pub async fn publishers_delete_post<'r>(
+    conn: DBConnection,
+    id: i32,
+) -> Result<Redirect, Template> {
+
+    PublishersControl::delete_publisher(&conn, id).await.unwrap();
+
+    Ok(Redirect::to(uri!(publishers)))  
 }
 

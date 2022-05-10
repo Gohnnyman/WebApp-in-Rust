@@ -1,0 +1,21 @@
+{% extends "base" %}
+
+{% block content %}
+
+    <form action="/publishers/add" method="post", enctype="multipart/form-data">   
+        <label for="name">Ім'я:</label>
+        <input type="text" id="name" name="add.name"><br>
+
+        <label for="price"> Ціна:</label>
+        <input type="text" id="price" name="add.price"><br>
+        
+        <label for="popularity"> Популярність:</label>
+        <select id="popularity" name="add.popularity">
+          {% for i in range(start=1, end=11)%}
+            <option value="{{loop.index}}">{{loop.index}}</option>
+          {% endfor%}
+        </select><br>
+
+        <input type="submit" value="Add" name="submit_button">
+    </form>
+{% endblock content %}

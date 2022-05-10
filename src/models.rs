@@ -3,13 +3,13 @@ use diesel::Queryable;
 
 #[derive(Queryable)]
 pub struct Publishers {
-    id: i32,
-    name: String,
-    price: PgMoney,
-    popularity: i16,
+    pub id: i32,
+    pub name: String,
+    pub price: PgMoney,
+    pub popularity: i16,
 }
 
-#[derive(Queryable, Debug, Clone)]
+#[derive(Queryable, Debug)]
 pub struct Games {
     pub id: i32,
     pub name: String,
@@ -23,50 +23,50 @@ pub struct Games {
 
 #[derive(Queryable)]
 pub struct Staff {
-    id: i32,
-    name: String,
-    birth: PgDate,
+    pub id: i32,
+    pub name: String,
+    pub birth: PgDate,
 }
 
 #[derive(Queryable)]
 pub struct Jobs {
-    id: i32,
-    game_id: i32,
-    staff_id: i32,
-    position: String,
-    first_work_day: PgDate,
-    last_work_day: PgDate,
-    salary: PgMoney,
+    pub id: i32,
+    pub game_id: i32,
+    pub staff_id: i32,
+    pub position: String,
+    pub first_work_day: PgDate,
+    pub last_work_day: PgDate,
+    pub salary: PgMoney,
 }
 
 #[derive(Queryable)]
 pub struct Users {
-    id: i32,
-    nickname: String,
-    registration_date: PgDate,
+    pub id: i32,
+    pub nickname: String,
+    pub registration_date: PgDate,
 }
 
 #[derive(Queryable)]
 pub struct Donations {
-    id: i32,
-    user_id: i32,
-    game_id: i32,
-    amount: PgMoney,
-    donation_time: PgTimestamp,
+    pub id: i32,
+    pub user_id: i32,
+    pub game_id: i32,
+    pub amount: PgMoney,
+    pub donation_time: PgTimestamp,
 }
 
 #[derive(Queryable)]
 pub struct Investors {
-    id: i32,
-    name: String,
-    is_company: bool,
+    pub id: i32,
+    pub name: String,
+    pub is_company: bool,
 }
 
 #[derive(Queryable)]
 pub struct InvestorsGames {
-    id: i32,
-    investor_id: i32,
-    game_id: i32,
-    share: i16,
-    invested: PgMoney,
+    pub id: i32,
+    pub investor_id: i32,
+    pub game_id: i32,
+    pub share: i16,
+    pub invested: PgMoney,
 }
