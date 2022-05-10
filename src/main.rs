@@ -33,7 +33,6 @@ fn start() -> _ {
                 games_edit_post,
                 games_add,
                 games_add_post,
-
                 publishers,
                 publishers_delete_post,
                 publishers_edit,

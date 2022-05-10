@@ -17,10 +17,9 @@
 
         <label for="publiseher_id"> Видавництво:</label>
         <select id="publisher_id" name="add.publisher_id">
-          <option value="1">Odin</option>
-          <option value="2">Dva</option>
-          <option value="3" selected>Tri</option>
-          <option value="4">Chatiri</option>
+          {% for i in content.0 %}
+            <option value={{i}} {% if values.0.publisher_id ~ "" == i%} selected {% endif %}>{{content.1[loop.index0]}}</option>
+          {% endfor %}
         </select><br>
           
         <label for="cost">Ціна:</label>

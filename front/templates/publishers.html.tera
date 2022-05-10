@@ -12,7 +12,7 @@
             <tr>
                 <td> {{game.id}} </td>
                 <td> {{game.name}} </td>
-                <td> {{game.price}} </td>
+                <td> {{game.price}} &#8372; </td>
                 <td> {{game.popularity}} </td>
                 <td> <a href="/publishers/edit?id={{ game.id }}" class="button"> Змінити </a> </td>
             </tr>

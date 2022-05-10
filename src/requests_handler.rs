@@ -1,9 +1,4 @@
-use crate::controllers::{
-    GamesControl, 
-    NewGame,
-    PublishersControl,
-    NewPublisher,
-};
+use crate::controllers::{GamesControl, NewGame, NewPublisher, PublishersControl};
 use crate::errors::ServerError;
 use crate::DBConnection;
 use anyhow::Result;
@@ -60,14 +55,24 @@ pub async fn games(conn: DBConnection) -> Template {
     Template::render("games", ctx)
 }
 
-
 #[get("/games/add")]
 pub async fn games_add() -> Template {
+    let publishers = PublishersControl::get_publishers(&conn).await.unwrap();
+    let publishers_id = publishers
+        .iter()
+        .map(|publisher| publisher.id.to_string())
+        .collect();
+
+    let publishers_name = publishers
+        .into_iter()
+        .map(|publisher| publisher.name)
+        .collect();
+
     let ctx = CustomContext::<String> {
         values: vec![],
         table: "Games",
         errors: vec![],
-        content: vec![],
+        content: vec![publishers_id, publishers_name],
     };
 
     Template::render("games_add", ctx)
@@ -95,14 +100,13 @@ pub async fn games_add_post<'r>(
                 })
                 .collect();
             errs.push(ServerError::NullValues(names).to_string());
-        }, 
+        }
         Ok(game) => {
             let game = NewGame::from(game);
             if let Err(err) = game {
                 errs.push(err.to_string());
             } else {
-                if let Some(err) = GamesControl::add_game(&conn, game.unwrap()).await.err()
-                {
+                if let Some(err) = GamesControl::add_game(&conn, game.unwrap()).await.err() {
                     errs.push(err.to_string());
                 }
             }
@@ -126,12 +130,22 @@ pub async fn games_add_post<'r>(
 pub async fn games_edit<'r>(conn: DBConnection, id: i32) -> Template {
     let mut game = GamesControl::get_game_by_id(&conn, id).await.unwrap();
     game.change_date_format("%d-%m-%Y", "%Y-%m-%d").unwrap();
+    let publishers = PublishersControl::get_publishers(&conn).await.unwrap();
+    let publishers_id = publishers
+        .iter()
+        .map(|publisher| publisher.id.to_string())
+        .collect();
+
+    let publishers_name = publishers
+        .into_iter()
+        .map(|publisher| publisher.name)
+        .collect();
 
     let ctx = CustomContext {
         values: vec![game],
         table: "Games",
         errors: vec![],
-        content: vec![],
+        content: vec![publishers_id, publishers_name],
     };
 
     Template::render("games_edit", ctx)
@@ -160,13 +174,15 @@ pub async fn games_edit_post<'r>(
                 })
                 .collect();
             errs.push(ServerError::NullValues(names).to_string());
-        }, 
+        }
         Ok(game) => {
             let game = NewGame::from(game);
             if let Err(err) = game {
                 errs.push(err.to_string());
             } else {
-                if let Some(err) = GamesControl::update_game(&conn, id, game.unwrap()).await.err()
+                if let Some(err) = GamesControl::update_game(&conn, id, game.unwrap())
+                    .await
+                    .err()
                 {
                     errs.push(err.to_string());
                 }
@@ -190,16 +206,11 @@ pub async fn games_edit_post<'r>(
 }
 
 #[post("/games/delete?<id>")]
-pub async fn games_delete_post<'r>(
-    conn: DBConnection,
-    id: i32,
-) -> Result<Redirect, Template> {
-
+pub async fn games_delete_post<'r>(conn: DBConnection, id: i32) -> Result<Redirect, Template> {
     GamesControl::delete_game(&conn, id).await.unwrap();
 
-    Ok(Redirect::to(uri!(games)))  
+    Ok(Redirect::to(uri!(games)))
 }
-
 
 #[get("/publishers")]
 pub async fn publishers(conn: DBConnection) -> Template {
@@ -212,7 +223,6 @@ pub async fn publishers(conn: DBConnection) -> Template {
 
     Template::render("publishers", ctx)
 }
-
 
 #[get("/publishers/add")]
 pub async fn publishers_add() -> Template {
@@ -248,13 +258,15 @@ pub async fn publishers_add_post<'r>(
                 })
                 .collect();
             errs.push(ServerError::NullValues(names).to_string());
-        }, 
+        }
         Ok(publisher) => {
             let publisher = NewPublisher::from(publisher);
             if let Err(err) = publisher {
                 errs.push(err.to_string());
             } else {
-                if let Some(err) = PublishersControl::add_publisher(&conn, publisher.unwrap()).await.err()
+                if let Some(err) = PublishersControl::add_publisher(&conn, publisher.unwrap())
+                    .await
+                    .err()
                 {
                     errs.push(err.to_string());
                 }
@@ -277,7 +289,9 @@ pub async fn publishers_add_post<'r>(
 
 #[get("/publishers/edit?<id>")]
 pub async fn publishers_edit<'r>(conn: DBConnection, id: i32) -> Template {
-    let publisher = PublishersControl::get_publisher_by_id(&conn, id).await.unwrap();
+    let publisher = PublishersControl::get_publisher_by_id(&conn, id)
+        .await
+        .unwrap();
 
     let ctx = CustomContext {
         values: vec![publisher],
@@ -312,13 +326,16 @@ pub async fn publishers_edit_post<'r>(
                 })
                 .collect();
             errs.push(ServerError::NullValues(names).to_string());
-        }, 
+        }
         Ok(publisher) => {
             let publisher = NewPublisher::from(publisher);
             if let Err(err) = publisher {
                 errs.push(err.to_string());
             } else {
-                if let Some(err) = PublishersControl::update_publisher(&conn, id, publisher.unwrap()).await.err()
+                if let Some(err) =
+                    PublishersControl::update_publisher(&conn, id, publisher.unwrap())
+                        .await
+                        .err()
                 {
                     errs.push(err.to_string());
                 }
@@ -327,7 +344,9 @@ pub async fn publishers_edit_post<'r>(
     }
 
     if !errs.is_empty() {
-        let publisher = PublishersControl::get_publisher_by_id(&conn, id).await.unwrap();
+        let publisher = PublishersControl::get_publisher_by_id(&conn, id)
+            .await
+            .unwrap();
         let ctx = CustomContext {
             values: vec![publisher],
             table: "Publishers",
@@ -341,13 +360,10 @@ pub async fn publishers_edit_post<'r>(
 }
 
 #[post("/publishers/delete?<id>")]
-pub async fn publishers_delete_post<'r>(
-    conn: DBConnection,
-    id: i32,
-) -> Result<Redirect, Template> {
+pub async fn publishers_delete_post<'r>(conn: DBConnection, id: i32) -> Result<Redirect, Template> {
+    PublishersControl::delete_publisher(&conn, id)
+        .await
+        .unwrap();
 
-    PublishersControl::delete_publisher(&conn, id).await.unwrap();
-
-    Ok(Redirect::to(uri!(publishers)))  
+    Ok(Redirect::to(uri!(publishers)))
 }
-
