@@ -1,0 +1,19 @@
+{% extends "base" %}
+
+{% block content %}
+
+    <form action="/staff/edit?id={{ values.0.id }}" method="post", enctype="multipart/form-data">   
+        <label for="name">Ім'я:</label>
+        <input type="text" id="name" name="add.name" value="{{ values.0.name }}"><br>
+
+        <label for="birth"> Дата народження:</label>
+        <input type="date" id="birth" name="add.birth" value="{{ values.0.birth }}"><br>
+        
+        <input type="submit" value="Змінити" name="submit_button">
+    </form>
+
+    <form action="/staff/delete?id={{ values.0.id }}" method="post", enctype="multipart/form-data">   
+        <input type="submit" value="Видалити", name="submit_button">
+    </form>
+
+{% endblock content %}

@@ -8,13 +8,13 @@
         <th> Ціна </th>    
         <th> Популярність </th>     
         <th> </th>
-        {% for game in values %}
+        {% for publusher in values %}
             <tr>
-                <td> {{game.id}} </td>
-                <td> {{game.name}} </td>
-                <td> {{game.price}} &#8372; </td>
-                <td> {{game.popularity}} </td>
-                <td> <a href="/publishers/edit?id={{ game.id }}" class="button"> Змінити </a> </td>
+                <td> {{publusher.id}} </td>
+                <td> {{publusher.name}} </td>
+                <td> {{publusher.price}} &#8372; </td>
+                <td> {{publusher.popularity}} </td>
+                <td> <a href="/publishers/edit?id={{ publusher.id }}" class="button"> Змінити </a> </td>
             </tr>
         {% endfor %}
     </table>

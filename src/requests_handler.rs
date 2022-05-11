@@ -1,4 +1,4 @@
-use crate::controllers::{GamesControl, NewGame, NewPublisher, PublishersControl};
+use crate::controllers::*;
 use crate::errors::ServerError;
 use crate::DBConnection;
 use anyhow::Result;
@@ -43,6 +43,28 @@ pub struct PublishersForm<'f> {
     add: form::Result<'f, AddPublisher>,
 }
 
+#[derive(Debug, FromForm)]
+pub struct AddInvestor {
+    pub name: String,
+    pub is_company: bool,
+}
+
+#[derive(Debug, FromForm)]
+pub struct InvestorsForm<'f> {
+    add: form::Result<'f, AddInvestor>,
+}
+
+#[derive(Debug, FromForm)]
+pub struct AddStaff {
+    pub name: String,
+    pub birth: String,
+}
+
+#[derive(Debug, FromForm)]
+pub struct StaffForm<'f> {
+    add: form::Result<'f, AddStaff>,
+}
+
 #[get("/games")]
 pub async fn games(conn: DBConnection) -> Template {
     let ctx = CustomContext {
@@ -56,7 +78,7 @@ pub async fn games(conn: DBConnection) -> Template {
 }
 
 #[get("/games/add")]
-pub async fn games_add() -> Template {
+pub async fn games_add(conn: DBConnection) -> Template {
     let publishers = PublishersControl::get_publishers(&conn).await.unwrap();
     let publishers_id = publishers
         .iter()
@@ -366,4 +388,304 @@ pub async fn publishers_delete_post<'r>(conn: DBConnection, id: i32) -> Result<R
         .unwrap();
 
     Ok(Redirect::to(uri!(publishers)))
+}
+
+#[get("/investors")]
+pub async fn investors(conn: DBConnection) -> Template {
+    let ctx = CustomContext {
+        values: InvestorsControl::get_investors(&conn).await.unwrap(),
+        table: "Investors",
+        errors: vec![],
+        content: vec![],
+    };
+
+    Template::render("investors", ctx)
+}
+
+#[get("/investors/add")]
+pub async fn investors_add() -> Template {
+    let ctx = CustomContext::<String> {
+        values: vec![],
+        table: "Investors",
+        errors: vec![],
+        content: vec![],
+    };
+
+    Template::render("investors_add", ctx)
+}
+
+#[post("/investors/add", data = "<form>")]
+pub async fn investors_add_post<'r>(
+    conn: DBConnection,
+    mut form: Form<Contextual<'r, InvestorsForm<'r>>>,
+) -> Result<Redirect, Template> {
+    let investor = std::mem::replace(&mut form.value, None).unwrap().add;
+    let mut errs = Vec::new();
+
+    match investor {
+        Err(errors) => {
+            let names = errors
+                .iter()
+                .map(|err| {
+                    let name = err.name.as_ref().unwrap().to_string();
+                    name.rsplit_once('.')
+                        .unwrap()
+                        .1
+                        .replace("_", " ")
+                        .to_string()
+                })
+                .collect();
+            errs.push(ServerError::NullValues(names).to_string());
+        }
+        Ok(investor) => {
+            let investor = NewInvestor::from(investor);
+            if let Err(err) = investor {
+                errs.push(err.to_string());
+            } else {
+                if let Some(err) = InvestorsControl::add_investor(&conn, investor.unwrap())
+                    .await
+                    .err()
+                {
+                    errs.push(err.to_string());
+                }
+            }
+        }
+    }
+
+    if !errs.is_empty() {
+        let ctx = CustomContext::<String> {
+            values: vec![],
+            table: "Investors",
+            errors: errs,
+            content: vec![],
+        };
+        Err(Template::render("investors_add", ctx))
+    } else {
+        Ok(Redirect::to(uri!(investors)))
+    }
+}
+
+#[get("/investors/edit?<id>")]
+pub async fn investors_edit<'r>(conn: DBConnection, id: i32) -> Template {
+    let investor = InvestorsControl::get_investor_by_id(&conn, id)
+        .await
+        .unwrap();
+    let ctx = CustomContext {
+        values: vec![investor],
+        table: "Investors",
+        errors: vec![],
+        content: vec![],
+    };
+
+    Template::render("investors_edit", ctx)
+}
+
+#[post("/investors/edit?<id>", data = "<form>")]
+pub async fn investors_edit_post<'r>(
+    conn: DBConnection,
+    id: i32,
+    mut form: Form<Contextual<'r, InvestorsForm<'r>>>,
+) -> Result<Redirect, Template> {
+    let investor = std::mem::replace(&mut form.value, None).unwrap().add;
+    let mut errs = Vec::new();
+
+    match investor {
+        Err(errors) => {
+            let names = errors
+                .iter()
+                .map(|err| {
+                    let name = err.name.as_ref().unwrap().to_string();
+                    name.rsplit_once('.')
+                        .unwrap()
+                        .1
+                        .replace("_", " ")
+                        .to_string()
+                })
+                .collect();
+            errs.push(ServerError::NullValues(names).to_string());
+        }
+        Ok(investor) => {
+            let investor = NewInvestor::from(investor);
+            if let Err(err) = investor {
+                errs.push(err.to_string());
+            } else {
+                if let Some(err) = InvestorsControl::update_investor(&conn, id, investor.unwrap())
+                    .await
+                    .err()
+                {
+                    errs.push(err.to_string());
+                }
+            }
+        }
+    }
+
+    if !errs.is_empty() {
+        let investor = InvestorsControl::get_investor_by_id(&conn, id)
+            .await
+            .unwrap();
+        let ctx = CustomContext {
+            values: vec![investor],
+            table: "Investors",
+            errors: errs,
+            content: vec![],
+        };
+        Err(Template::render("investors_edit", ctx))
+    } else {
+        Ok(Redirect::to(uri!(investors)))
+    }
+}
+
+#[post("/investors/delete?<id>")]
+pub async fn investors_delete_post<'r>(conn: DBConnection, id: i32) -> Result<Redirect, Template> {
+    InvestorsControl::delete_investor(&conn, id).await.unwrap();
+
+    Ok(Redirect::to(uri!(investors)))
+}
+
+#[get("/staff")]
+pub async fn staff(conn: DBConnection) -> Template {
+    let ctx = CustomContext {
+        values: StaffControl::get_staff(&conn).await.unwrap(),
+        table: "Staff",
+        errors: vec![],
+        content: vec![],
+    };
+
+    Template::render("staff", ctx)
+}
+
+#[get("/staff/add")]
+pub async fn staff_add() -> Template {
+    let ctx = CustomContext::<String> {
+        values: vec![],
+        table: "Staff",
+        errors: vec![],
+        content: vec![],
+    };
+
+    Template::render("staff_add", ctx)
+}
+
+#[post("/staff/add", data = "<form>")]
+pub async fn staff_add_post<'r>(
+    conn: DBConnection,
+    mut form: Form<Contextual<'r, StaffForm<'r>>>,
+) -> Result<Redirect, Template> {
+    let staff = std::mem::replace(&mut form.value, None).unwrap().add;
+    let mut errs = Vec::new();
+
+    match staff {
+        Err(errors) => {
+            let names = errors
+                .iter()
+                .map(|err| {
+                    let name = err.name.as_ref().unwrap().to_string();
+                    name.rsplit_once('.')
+                        .unwrap()
+                        .1
+                        .replace("_", " ")
+                        .to_string()
+                })
+                .collect();
+            errs.push(ServerError::NullValues(names).to_string());
+        }
+        Ok(staff) => {
+            let staff = NewStaff::from(staff);
+            if let Err(err) = staff {
+                errs.push(err.to_string());
+            } else {
+                if let Some(err) = StaffControl::add_staff(&conn, staff.unwrap()).await.err() {
+                    errs.push(err.to_string());
+                }
+            }
+        }
+    }
+
+    if !errs.is_empty() {
+        let ctx = CustomContext::<String> {
+            values: vec![],
+            table: "Staff",
+            errors: errs,
+            content: vec![],
+        };
+        Err(Template::render("staff_add", ctx))
+    } else {
+        Ok(Redirect::to(uri!(staff)))
+    }
+}
+
+#[get("/staff/edit?<id>")]
+pub async fn staff_edit<'r>(conn: DBConnection, id: i32) -> Template {
+    let mut staff = StaffControl::get_staff_by_id(&conn, id).await.unwrap();
+    staff.change_date_format("%d-%m-%Y", "%Y-%m-%d").unwrap();
+
+    let ctx = CustomContext {
+        values: vec![staff],
+        table: "Staff",
+        errors: vec![],
+        content: vec![],
+    };
+
+    Template::render("staff_edit", ctx)
+}
+
+#[post("/staff/edit?<id>", data = "<form>")]
+pub async fn staff_edit_post<'r>(
+    conn: DBConnection,
+    id: i32,
+    mut form: Form<Contextual<'r, StaffForm<'r>>>,
+) -> Result<Redirect, Template> {
+    let staff = std::mem::replace(&mut form.value, None).unwrap().add;
+    let mut errs = Vec::new();
+
+    match staff {
+        Err(errors) => {
+            let names = errors
+                .iter()
+                .map(|err| {
+                    let name = err.name.as_ref().unwrap().to_string();
+                    name.rsplit_once('.')
+                        .unwrap()
+                        .1
+                        .replace("_", " ")
+                        .to_string()
+                })
+                .collect();
+            errs.push(ServerError::NullValues(names).to_string());
+        }
+        Ok(staff) => {
+            let staff = NewStaff::from(staff);
+            if let Err(err) = staff {
+                errs.push(err.to_string());
+            } else {
+                if let Some(err) = StaffControl::update_staff(&conn, id, staff.unwrap())
+                    .await
+                    .err()
+                {
+                    errs.push(err.to_string());
+                }
+            }
+        }
+    }
+
+    if !errs.is_empty() {
+        let mut staff = StaffControl::get_staff_by_id(&conn, id).await.unwrap();
+        staff.change_date_format("%d-%m-%Y", "%Y-%m-%d").unwrap();
+        let ctx = CustomContext {
+            values: vec![staff],
+            table: "Staff",
+            errors: errs,
+            content: vec![],
+        };
+        Err(Template::render("staff_edit", ctx))
+    } else {
+        Ok(Redirect::to(uri!(staff)))
+    }
+}
+
+#[post("/staff/delete?<id>")]
+pub async fn staff_delete_post<'r>(conn: DBConnection, id: i32) -> Result<Redirect, Template> {
+    StaffControl::delete_staff(&conn, id).await.unwrap();
+
+    Ok(Redirect::to(uri!(staff)))
 }

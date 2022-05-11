@@ -1,0 +1,19 @@
+{% extends "base" %}
+
+{% block content %}
+
+    <form action="/investors/edit?id={{ values.0.id }}" method="post", enctype="multipart/form-data">   
+        <label for="name">Ім'я:</label>
+        <input type="text" id="name" name="add.name" value="{{ values.0.name }}"><br>
+
+        <label for="is_company"> По підписці:</label>
+        <input type="checkbox" id="is_comapany" name="add.is_company" {% if values.0.is_company%} checked {% endif %}><br>
+        
+        <input type="submit" value="Змінити" name="submit_button">
+    </form>
+
+    <form action="/investors/delete?id={{ values.0.id }}" method="post", enctype="multipart/form-data">   
+        <input type="submit" value="Видалити", name="submit_button">
+    </form>
+
+{% endblock content %}

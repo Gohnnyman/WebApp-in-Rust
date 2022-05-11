@@ -16,6 +16,6 @@
           {% endfor%}
         </select><br>
 
-        <input type="submit" value="Add" name="submit_button">
+        <input type="submit" value="Додати" name="submit_button">
     </form>
 {% endblock content %}

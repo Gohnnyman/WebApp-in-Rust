@@ -1,0 +1,21 @@
+{% extends "base" %}
+
+{% block content %}
+    <h3> {{ table }} </h3>
+    <table>
+        <th> Id </th>    
+        <th> Ім'я </th>    
+        <th> Дата народження </th>     
+        <th> </th>
+        {% for staff in values %}
+            <tr>
+                <td> {{staff.id}} </td>
+                <td> {{staff.name}} </td>
+                <td> {{staff.birth}} </td>
+                <td> <a href="/staff/edit?id={{ staff.id }}" class="button"> Змінити </a> </td>
+            </tr>
+        {% endfor %}
+    </table>
+
+    <a href="/staff/add" class="button" style="margin-top: 30px"> Додати </a>
+{% endblock content %}

@@ -1,0 +1,14 @@
+{% extends "base" %}
+
+{% block content %}
+
+    <form action="/investors/add" method="post", enctype="multipart/form-data">   
+        <label for="name">Ім'я:</label>
+        <input type="text" id="name" name="add.name"><br>
+
+        <label for="is_company"> По підписці:</label>
+        <input type="checkbox" id="is_company" name="add.is_company"><br>
+        
+        <input type="submit" value="Додати" name="submit_button">
+    </form>
+{% endblock content %}

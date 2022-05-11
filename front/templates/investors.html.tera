@@ -1,0 +1,21 @@
+{% extends "base" %}
+
+{% block content %}
+    <h3> {{ table }} </h3>
+    <table>
+        <th> Id </th>    
+        <th> Ім'я </th>    
+        <th> Є компанією: </th>     
+        <th> </th>
+        {% for investor in values %}
+            <tr>
+                <td> {{investor.id}} </td>
+                <td> {{investor.name}} </td>
+                <td> {% if investor.is_company %} [X] {% else %} [] {% endif %} </td>
+                <td> <a href="/investors/edit?id={{ investor.id }}" class="button"> Змінити </a> </td>
+            </tr>
+        {% endfor %}
+    </table>
+
+    <a href="/investors/add" class="button" style="margin-top: 30px"> Додати </a>
+{% endblock content %}

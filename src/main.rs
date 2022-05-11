@@ -38,7 +38,19 @@ fn start() -> _ {
                 publishers_edit,
                 publishers_edit_post,
                 publishers_add,
-                publishers_add_post
+                publishers_add_post,
+                investors,
+                investors_delete_post,
+                investors_edit,
+                investors_edit_post,
+                investors_add,
+                investors_add_post,
+                staff,
+                staff_delete_post,
+                staff_edit,
+                staff_edit_post,
+                staff_add,
+                staff_add_post,
             ],
         )
         .mount("/", FileServer::from(relative!("front/static")))
