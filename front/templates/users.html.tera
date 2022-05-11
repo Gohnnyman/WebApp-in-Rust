@@ -1,0 +1,21 @@
+{% extends "base" %}
+
+{% block content %}
+    <h3> {{ table }} </h3>
+    <table>
+        <th> Id </th>    
+        <th> Нікнейм </th>    
+        <th> Дата реєстрації </th>     
+        <th> </th>
+        {% for user in values %}
+            <tr>
+                <td> {{user.id}} </td>
+                <td> {{user.nickname}} </td>
+                <td> {{user.registration_date}} </td>
+                <td> <a href="/users/edit?id={{ user.id }}" class="button"> Змінити </a> </td>
+            </tr>
+        {% endfor %}
+    </table>
+
+    <a href="/users/add" class="button" style="margin-top: 30px"> Додати </a>
+{% endblock content %}

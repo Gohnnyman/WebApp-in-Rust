@@ -65,6 +65,17 @@ pub struct StaffForm<'f> {
     add: form::Result<'f, AddStaff>,
 }
 
+#[derive(Debug, FromForm)]
+pub struct AddUser {
+    pub nickname: String,
+    pub registration_date: String,
+}
+
+#[derive(Debug, FromForm)]
+pub struct UsersForm<'f> {
+    add: form::Result<'f, AddUser>,
+}
+
 #[get("/games")]
 pub async fn games(conn: DBConnection) -> Template {
     let ctx = CustomContext {
@@ -688,4 +699,153 @@ pub async fn staff_delete_post<'r>(conn: DBConnection, id: i32) -> Result<Redire
     StaffControl::delete_staff(&conn, id).await.unwrap();
 
     Ok(Redirect::to(uri!(staff)))
+}
+
+
+#[get("/users")]
+pub async fn users(conn: DBConnection) -> Template {
+    let ctx = CustomContext {
+        values: UsersControl::get_users(&conn).await.unwrap(),
+        table: "Users",
+        errors: vec![],
+        content: vec![],
+    };
+
+    Template::render("users", ctx)
+}
+
+#[get("/users/add")]
+pub async fn users_add() -> Template {
+    let ctx = CustomContext::<String> {
+        values: vec![],
+        table: "Users",
+        errors: vec![],
+        content: vec![],
+    };
+
+    Template::render("users_add", ctx)
+}
+
+#[post("/users/add", data = "<form>")]
+pub async fn users_add_post<'r>(
+    conn: DBConnection,
+    mut form: Form<Contextual<'r, UsersForm<'r>>>,
+) -> Result<Redirect, Template> {
+    let users = std::mem::replace(&mut form.value, None).unwrap().add;
+    let mut errs = Vec::new();
+
+    match users {
+        Err(errors) => {
+            let nicknames = errors
+                .iter()
+                .map(|err| {
+                    let nickname = err.name.as_ref().unwrap().to_string();
+                    nickname.rsplit_once('.')
+                        .unwrap()
+                        .1
+                        .replace("_", " ")
+                        .to_string()
+                })
+                .collect();
+            errs.push(ServerError::NullValues(nicknames).to_string());
+        }
+        Ok(users) => {
+            let users = NewUser::from(users);
+            if let Err(err) = users {
+                errs.push(err.to_string());
+            } else {
+                if let Some(err) = UsersControl::add_user(&conn, users.unwrap()).await.err() {
+                    errs.push(err.to_string());
+                }
+            }
+        }
+    }
+
+    if !errs.is_empty() {
+        let ctx = CustomContext::<String> {
+            values: vec![],
+            table: "Users",
+            errors: errs,
+            content: vec![],
+        };
+        Err(Template::render("users_add", ctx))
+    } else {
+        Ok(Redirect::to(uri!(users)))
+    }
+}
+
+#[get("/users/edit?<id>")]
+pub async fn users_edit<'r>(conn: DBConnection, id: i32) -> Template {
+    let mut users = UsersControl::get_user_by_id(&conn, id).await.unwrap();
+    users.change_date_format("%d-%m-%Y", "%Y-%m-%d").unwrap();
+
+    let ctx = CustomContext {
+        values: vec![users],
+        table: "Users",
+        errors: vec![],
+        content: vec![],
+    };
+
+    Template::render("users_edit", ctx)
+}
+
+#[post("/users/edit?<id>", data = "<form>")]
+pub async fn users_edit_post<'r>(
+    conn: DBConnection,
+    id: i32,
+    mut form: Form<Contextual<'r, UsersForm<'r>>>,
+) -> Result<Redirect, Template> {
+    let users = std::mem::replace(&mut form.value, None).unwrap().add;
+    let mut errs = Vec::new();
+
+    match users {
+        Err(errors) => {
+            let nicknames = errors
+                .iter()
+                .map(|err| {
+                    let nickname = err.name.as_ref().unwrap().to_string();
+                    nickname.rsplit_once('.')
+                        .unwrap()
+                        .1
+                        .replace("_", " ")
+                        .to_string()
+                })
+                .collect();
+            errs.push(ServerError::NullValues(nicknames).to_string());
+        }
+        Ok(users) => {
+            let users = NewUser::from(users);
+            if let Err(err) = users {
+                errs.push(err.to_string());
+            } else {
+                if let Some(err) = UsersControl::update_user(&conn, id, users.unwrap())
+                    .await
+                    .err()
+                {
+                    errs.push(err.to_string());
+                }
+            }
+        }
+    }
+
+    if !errs.is_empty() {
+        let mut users = UsersControl::get_user_by_id(&conn, id).await.unwrap();
+        users.change_date_format("%d-%m-%Y", "%Y-%m-%d").unwrap();
+        let ctx = CustomContext {
+            values: vec![users],
+            table: "Users",
+            errors: errs,
+            content: vec![],
+        };
+        Err(Template::render("users_edit", ctx))
+    } else {
+        Ok(Redirect::to(uri!(users)))
+    }
+}
+
+#[post("/users/delete?<id>")]
+pub async fn users_delete_post<'r>(conn: DBConnection, id: i32) -> Result<Redirect, Template> {
+    UsersControl::delete_users(&conn, id).await.unwrap();
+
+    Ok(Redirect::to(uri!(users)))
 }

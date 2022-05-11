@@ -1,0 +1,14 @@
+{% extends "base" %}
+
+{% block content %}
+
+    <form action="/users/add" method="post", enctype="multipart/form-data">   
+        <label for="nickname">Нікейм</label>
+        <input type="text" id="nickname" name="add.nickname"><br>
+
+        <label for="registration_date"> Дата виходу:</label>
+        <input type="date" id="registration_date" name="add.registration_date"><br>
+        
+        <input type="submit" value="Додати" name="submit_button">
+    </form>
+{% endblock content %}

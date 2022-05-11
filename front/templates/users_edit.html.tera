@@ -1,0 +1,19 @@
+{% extends "base" %}
+
+{% block content %}
+
+    <form action="/users/edit?id={{ values.0.id }}" method="post", enctype="multipart/form-data">   
+        <label for="nickname">Нікнейм</label>
+        <input type="text" id="nickname" name="add.nickname" value="{{ values.0.nickname }}"><br>
+
+        <label for="registration_date"> Дата реєстрації:</label>
+        <input type="date" id="registration_date" name="add.registration_date" value="{{ values.0.registration_date }}"><br>
+        
+        <input type="submit" value="Змінити" name="submit_button">
+    </form>
+
+    <form action="/users/delete?id={{ values.0.id }}" method="post", enctype="multipart/form-data">   
+        <input type="submit" value="Видалити", name="submit_button">
+    </form>
+
+{% endblock content %}
