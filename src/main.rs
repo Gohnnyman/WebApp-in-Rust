@@ -57,6 +57,12 @@ fn start() -> _ {
                 users_edit_post,
                 users_add,
                 users_add_post,
+                donations,
+                donations_delete_post,
+                donations_edit,
+                donations_edit_post,
+                donations_add,
+                donations_add_post,
             ],
         )
         .mount("/", FileServer::from(relative!("front/static")))

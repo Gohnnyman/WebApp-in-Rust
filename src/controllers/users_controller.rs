@@ -45,7 +45,11 @@ pub struct UsersControl {
 impl std::convert::From<Users> for UsersControl {
     fn from(users_struct: Users) -> Self {
         let registration_date = NaiveDate::from_num_days_from_ce(users_struct.registration_date.0);
-        let registration_date = NaiveDate::from_ymd(registration_date.year() + 1999, registration_date.month(), registration_date.day());
+        let registration_date = NaiveDate::from_ymd(
+            registration_date.year() + 1999,
+            registration_date.month(),
+            registration_date.day(),
+        );
         let registration_date = registration_date.format("%d-%m-%Y").to_string();
         UsersControl {
             id: users_struct.id,
@@ -105,16 +109,15 @@ impl UsersControl {
         .await
     }
 
-    pub async fn update_user(
-        conn: &DBConnection,
-        id_for_update: i32,
-        user: NewUser,
-    ) -> Result<()> {
+    pub async fn update_user(conn: &DBConnection, id_for_update: i32, user: NewUser) -> Result<()> {
         use crate::schema::users::dsl::*;
 
         conn.run(move |sql_connection| -> Result<()> {
             diesel::update(users.filter(&id.eq(id_for_update)))
-                .set((nickname.eq(user.nickname), registration_date.eq(user.registration_date)))
+                .set((
+                    nickname.eq(user.nickname),
+                    registration_date.eq(user.registration_date),
+                ))
                 .get_result::<Users>(sql_connection)
                 .map_err(|err| match err {
                     DieselError::DatabaseError(_, info) => {

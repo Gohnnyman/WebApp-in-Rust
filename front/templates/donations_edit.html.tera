@@ -1,0 +1,33 @@
+{% extends "base" %}
+
+{% block content %}
+
+    <form action="/donations/edit?id={{ values.0.id }}" method="post", enctype="multipart/form-data">   
+        <label for="user_id">Користувач:</label>
+        <select id="user_id" name="add.user_id">
+          {% for i in content.0 %}
+            <option value={{i}} {% if values.0.user_id ~ "" == i%} selected {% endif %}>{{content.1[loop.index0]}}</option>
+          {% endfor %}
+        </select><br>
+
+        <label for="game_id">Гра:</label>
+        <select id="game_id" name="add.game_id">
+          {% for i in content.2 %}
+            <option value={{i}} {% if values.0.game_id ~ "" == i%} selected {% endif %}>{{content.3[loop.index0]}}</option>
+          {% endfor %}
+        </select><br>
+        
+        <label for="amount">Кількість:</label>
+        <input type="text" id="amount" name="add.amount" value = "{{ values.0.amount }}"><br>
+        
+        <label for="donation_time"> Дата:</label>
+        <input type="datetime-local" id="donation_time" name="add.donation_time" value="{{ values.0.donation_time }}"><br>
+        
+        <input type="submit" value="Змінити" name="submit_button">
+    </form>
+
+    <form action="/donations/delete?id={{ values.0.id }}" method="post", enctype="multipart/form-data">   
+        <input type="submit" value="Видалити", name="submit_button">
+    </form>
+
+{% endblock content %}

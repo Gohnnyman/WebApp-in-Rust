@@ -1,4 +1,4 @@
-use diesel::pg::data_types::{PgDate, PgMoney, PgTimestamp};
+use diesel::pg::data_types::{PgDate, PgMoney};
 use diesel::Queryable;
 
 #[derive(Queryable)]
@@ -52,7 +52,7 @@ pub struct Donations {
     pub user_id: i32,
     pub game_id: i32,
     pub amount: PgMoney,
-    pub donation_time: PgTimestamp,
+    pub donation_time: chrono::NaiveDateTime,
 }
 
 #[derive(Queryable)]

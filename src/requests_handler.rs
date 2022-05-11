@@ -76,6 +76,19 @@ pub struct UsersForm<'f> {
     add: form::Result<'f, AddUser>,
 }
 
+#[derive(Debug, FromForm)]
+pub struct AddDonation {
+    pub user_id: i32,
+    pub game_id: i32,
+    pub amount: f64,
+    pub donation_time: String,
+}
+
+#[derive(Debug, FromForm)]
+pub struct DonationsForm<'f> {
+    add: form::Result<'f, AddDonation>,
+}
+
 #[get("/games")]
 pub async fn games(conn: DBConnection) -> Template {
     let ctx = CustomContext {
@@ -701,7 +714,6 @@ pub async fn staff_delete_post<'r>(conn: DBConnection, id: i32) -> Result<Redire
     Ok(Redirect::to(uri!(staff)))
 }
 
-
 #[get("/users")]
 pub async fn users(conn: DBConnection) -> Template {
     let ctx = CustomContext {
@@ -740,7 +752,8 @@ pub async fn users_add_post<'r>(
                 .iter()
                 .map(|err| {
                     let nickname = err.name.as_ref().unwrap().to_string();
-                    nickname.rsplit_once('.')
+                    nickname
+                        .rsplit_once('.')
                         .unwrap()
                         .1
                         .replace("_", " ")
@@ -804,7 +817,8 @@ pub async fn users_edit_post<'r>(
                 .iter()
                 .map(|err| {
                     let nickname = err.name.as_ref().unwrap().to_string();
-                    nickname.rsplit_once('.')
+                    nickname
+                        .rsplit_once('.')
                         .unwrap()
                         .1
                         .replace("_", " ")
@@ -848,4 +862,180 @@ pub async fn users_delete_post<'r>(conn: DBConnection, id: i32) -> Result<Redire
     UsersControl::delete_users(&conn, id).await.unwrap();
 
     Ok(Redirect::to(uri!(users)))
+}
+
+#[get("/donations")]
+pub async fn donations(conn: DBConnection) -> Template {
+    let ctx = CustomContext {
+        values: DonationsControl::get_donations(&conn).await.unwrap(),
+        table: "Donations",
+        errors: vec![],
+        content: vec![],
+    };
+
+    Template::render("donations", ctx)
+}
+
+#[get("/donations/add")]
+pub async fn donations_add(conn: DBConnection) -> Template {
+    let users = UsersControl::get_users(&conn).await.unwrap();
+    let users_id = users.iter().map(|user| user.id.to_string()).collect();
+
+    let users_name = users.into_iter().map(|user| user.nickname).collect();
+
+    let games = GamesControl::get_games(&conn).await.unwrap();
+    let games_id = games.iter().map(|game| game.id.to_string()).collect();
+
+    let games_name = games.into_iter().map(|game| game.name).collect();
+
+    let ctx = CustomContext::<String> {
+        values: vec![],
+        table: "Donations",
+        errors: vec![],
+        content: vec![users_id, users_name, games_id, games_name],
+    };
+
+    Template::render("donations_add", ctx)
+}
+
+#[post("/donations/add", data = "<form>")]
+pub async fn donations_add_post<'r>(
+    conn: DBConnection,
+    mut form: Form<Contextual<'r, DonationsForm<'r>>>,
+) -> Result<Redirect, Template> {
+    let donation = std::mem::replace(&mut form.value, None).unwrap().add;
+    let mut errs = Vec::new();
+
+    match donation {
+        Err(errors) => {
+            let names = errors
+                .iter()
+                .map(|err| {
+                    let name = err.name.as_ref().unwrap().to_string();
+                    name.rsplit_once('.')
+                        .unwrap()
+                        .1
+                        .replace("_", " ")
+                        .to_string()
+                })
+                .collect();
+            errs.push(ServerError::NullValues(names).to_string());
+        }
+        Ok(donation) => {
+            let donation = NewDonation::from(donation);
+            if let Err(err) = donation {
+                errs.push(err.to_string());
+            } else {
+                if let Some(err) = DonationsControl::add_donation(&conn, donation.unwrap())
+                    .await
+                    .err()
+                {
+                    errs.push(err.to_string());
+                }
+            }
+        }
+    }
+
+    if !errs.is_empty() {
+        let ctx = CustomContext::<String> {
+            values: vec![],
+            table: "Donations",
+            errors: errs,
+            content: vec![],
+        };
+        Err(Template::render("donations_add", ctx))
+    } else {
+        Ok(Redirect::to(uri!(donations)))
+    }
+}
+
+#[get("/donations/edit?<id>")]
+pub async fn donations_edit<'r>(conn: DBConnection, id: i32) -> Template {
+    let mut donation = DonationsControl::get_donation_by_id(&conn, id)
+        .await
+        .unwrap();
+    donation
+        .change_date_format("%d-%m-%Y, %H:%M", "%Y-%m-%dT%H:%M")
+        .unwrap();
+    let users = UsersControl::get_users(&conn).await.unwrap();
+    let users_id = users.iter().map(|user| user.id.to_string()).collect();
+
+    let users_name = users.into_iter().map(|user| user.nickname).collect();
+
+    let games = GamesControl::get_games(&conn).await.unwrap();
+    let games_id = games.iter().map(|game| game.id.to_string()).collect();
+
+    let games_name = games.into_iter().map(|game| game.name).collect();
+
+    let ctx = CustomContext {
+        values: vec![donation],
+        table: "Donations",
+        errors: vec![],
+        content: vec![users_id, users_name, games_id, games_name],
+    };
+
+    Template::render("donations_edit", ctx)
+}
+
+#[post("/donations/edit?<id>", data = "<form>")]
+pub async fn donations_edit_post<'r>(
+    conn: DBConnection,
+    id: i32,
+    mut form: Form<Contextual<'r, DonationsForm<'r>>>,
+) -> Result<Redirect, Template> {
+    let donation = std::mem::replace(&mut form.value, None).unwrap().add;
+    let mut errs = Vec::new();
+
+    match donation {
+        Err(errors) => {
+            let names = errors
+                .iter()
+                .map(|err| {
+                    let name = err.name.as_ref().unwrap().to_string();
+                    name.rsplit_once('.')
+                        .unwrap()
+                        .1
+                        .replace("_", " ")
+                        .to_string()
+                })
+                .collect();
+            errs.push(ServerError::NullValues(names).to_string());
+        }
+        Ok(donation) => {
+            let donation = NewDonation::from(donation);
+            if let Err(err) = donation {
+                errs.push(err.to_string());
+            } else {
+                if let Some(err) = DonationsControl::update_donation(&conn, id, donation.unwrap())
+                    .await
+                    .err()
+                {
+                    errs.push(err.to_string());
+                }
+            }
+        }
+    }
+
+    if !errs.is_empty() {
+        let mut donation = DonationsControl::get_donation_by_id(&conn, id)
+            .await
+            .unwrap();
+        donation.change_date_format("%d-%m-%Y", "%Y-%m-%d").unwrap();
+        let ctx = CustomContext {
+            values: vec![donation],
+            table: "Donations",
+            errors: errs,
+            content: vec![],
+        };
+        Err(Template::render("donations_edit", ctx))
+    } else {
+        Ok(Redirect::to(uri!(donations)))
+    }
+}
+
+#[post("/donations/delete?<id>")]
+pub async fn donations_delete_post<'r>(conn: DBConnection, id: i32) -> Result<Redirect, Template> {
+    DonationsControl::delete_donation(&conn, id).await.unwrap();
+
+    Ok(Redirect::to(uri!(donations)))
 }

@@ -1,0 +1,28 @@
+{% extends "base" %}
+
+{% block content %}
+
+    <form action="/donations/add" method="post", enctype="multipart/form-data">   
+        <label for="user_id">Користувач:</label>
+        <select id="user_id" name="add.user_id">
+          {% for i in content.0 %}
+            <option value={{i}}>{{content.1[loop.index0]}}</option>
+          {% endfor %}
+        </select><br>
+
+        <label for="game_id">Гра:</label>
+        <select id="game_id" name="add.game_id">
+          {% for i in content.2 %}
+            <option value={{i}}>{{content.3[loop.index0]}}</option>
+          {% endfor %}
+        </select><br>
+        
+        <label for="amount">Кількість:</label>
+        <input type="text" id="amount" name="add.amount"><br>
+        
+        <label for="donation_time"> Дата:</label>
+        <input type="datetime-local" id="donation_time" name="add.donation_time"><br>
+        
+        <input type="submit" value="Додати" name="submit_button">
+    </form>
+{% endblock content %}

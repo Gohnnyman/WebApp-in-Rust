@@ -1,0 +1,25 @@
+{% extends "base" %}
+
+{% block content %}
+    <h3> {{ table }} </h3>
+    <table>
+        <th> Id </th>    
+        <th> Користувач </th>    
+        <th> Гра </th>    
+        <th> Кількість </th>     
+        <th> Дата </th>    
+        <th> </th>
+        {% for donation in values %}
+            <tr>
+                <td> {{donation.id}} </td>
+                <td> {{donation.user}} </td>
+                <td> {{donation.game}} </td>
+                <td> {{donation.amount}} &#8372; </td>
+                <td> {{donation.donation_time}} </td>
+                <td> <a href="/donations/edit?id={{ donation.id }}" class="button"> Змінити </a> </td>
+            </tr>
+        {% endfor %}
+    </table>
+
+    <a href="/donations/add" class="button" style="margin-top: 30px"> Додати </a>
+{% endblock content %}
