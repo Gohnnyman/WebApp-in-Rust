@@ -1,0 +1,33 @@
+{% extends "base" %}
+
+{% block content %}
+
+    <form action="/investments/edit?id={{ values.0.id }}" method="post", enctype="multipart/form-data">   
+      <label for="investor_id">Інвестор:</label>
+      <select id="investor_id" name="add.investor_id">
+        {% for i in content.0 %}
+        <option value={{i}} {% if values.0.investor_id ~ "" == i%} selected {% endif %}>{{content.1[loop.index0]}}</option>
+        {% endfor %}
+      </select><br>
+
+      <label for="game_id">Гра:</label>
+      <select id="game_id" name="add.game_id">
+        {% for i in content.2 %}
+          <option value={{i}} {% if values.0.game_id ~ "" == i%} selected {% endif %}>{{content.3[loop.index0]}}</option>
+        {% endfor %}
+      </select><br>
+        
+        <label for="position"> Процент доходів: </label>
+        <input type="text" id="share" name="add.share" value = "{{ values.0.share }}"><br>
+        
+        <label for="invested">Зарплатня:</label>
+        <input type="text" id="invested" name="add.invested" value = "{{ values.0.invested }}"><br>
+
+        <input type="submit" value="Змінити" name="submit_button">
+    </form>
+
+    <form action="/investments/delete?id={{ values.0.id }}" method="post", enctype="multipart/form-data">   
+        <input type="submit" value="Видалити", name="submit_button">
+    </form>
+
+{% endblock content %}

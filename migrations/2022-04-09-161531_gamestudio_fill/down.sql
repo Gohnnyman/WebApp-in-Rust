@@ -7,7 +7,7 @@ DELETE FROM Investors;
 
 DELETE FROM Staff;
 
-DELETE FROM Investors_Games;
+DELETE FROM Investments;
 
 DELETE FROM Users;
 

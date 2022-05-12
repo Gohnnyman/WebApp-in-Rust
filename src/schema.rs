@@ -22,20 +22,20 @@ table! {
 }
 
 table! {
-    investors (id) {
-        id -> Int4,
-        name -> Varchar,
-        is_company -> Bool,
-    }
-}
-
-table! {
-    investors_games (id) {
+    investments (id) {
         id -> Int4,
         investor_id -> Int4,
         game_id -> Int4,
         share -> Int2,
         invested -> Money,
+    }
+}
+
+table! {
+    investors (id) {
+        id -> Int4,
+        name -> Varchar,
+        is_company -> Bool,
     }
 }
 
@@ -79,16 +79,16 @@ table! {
 joinable!(donations -> games (game_id));
 joinable!(donations -> users (user_id));
 joinable!(games -> publishers (publisher_id));
-joinable!(investors_games -> games (game_id));
-joinable!(investors_games -> investors (investor_id));
+joinable!(investments -> games (game_id));
+joinable!(investments -> investors (investor_id));
 joinable!(jobs -> games (game_id));
 joinable!(jobs -> staff (staff_id));
 
 allow_tables_to_appear_in_same_query!(
     donations,
     games,
+    investments,
     investors,
-    investors_games,
     jobs,
     publishers,
     staff,

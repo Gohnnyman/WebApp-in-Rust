@@ -46,7 +46,7 @@ VALUES
 ('Jolyne Kujo', '2004.05.17');
 
 
-INSERT INTO Investors_Games (investor_id, game_id, share, invested)
+INSERT INTO Investments (investor_id, game_id, share, invested)
 VALUES 
 (1, 1, 10, 30000),
 (2, 1, 1, 3000),

@@ -1,0 +1,25 @@
+{% extends "base" %}
+
+{% block content %}
+    <h3> {{ table }} </h3>
+    <table>
+        <th> Id </th>    
+        <th> Investor </th>     
+        <th> Гра </th>    
+        <th> Процент доходів </th>     
+        <th> Інвестовано </th>     
+        <th> </th>
+        {% for investment in values %}
+            <tr>
+                <td> {{investment.id}} </td>
+                <td> {{investment.investor}} </td>
+                <td> {{investment.game}} </td>
+                <td> {{investment.share}}% </td>
+                <td> {{investment.invested}} &#8372;</td>
+                <td> <a href="/investments/edit?id={{ investment.id }}" class="button"> Змінити </a> </td>
+            </tr>
+        {% endfor %}
+    </table>
+
+    <a href="/investments/add" class="button" style="margin-top: 30px"> Додати </a>
+{% endblock content %}

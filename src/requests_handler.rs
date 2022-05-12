@@ -104,6 +104,19 @@ pub struct JobsForm<'f> {
     add: form::Result<'f, AddJob>,
 }
 
+#[derive(Debug, FromForm)]
+pub struct AddInvestment {
+    pub game_id: i32,
+    pub investor_id: i32,
+    pub share: i16,
+    pub invested: f64,
+}
+
+#[derive(Debug, FromForm)]
+pub struct InvestmentsForm<'f> {
+    add: form::Result<'f, AddInvestment>,
+}
+
 #[get("/")]
 pub async fn index() -> Template {
     let ctx = CustomContext {
@@ -1230,4 +1243,167 @@ pub async fn jobs_delete_post<'r>(conn: DBConnection, id: i32) -> Result<Redirec
     JobsControl::delete_job(&conn, id).await.unwrap();
 
     Ok(Redirect::to(uri!(jobs)))
+}
+
+
+#[get("/investments")]
+pub async fn investments(conn: DBConnection) -> Template {
+    let ctx = CustomContext {
+        values: InvestmentsControl::get_investments(&conn).await.unwrap(),
+        table: "Investments",
+        errors: vec![],
+        content: vec![],
+    };
+
+    Template::render("investments", ctx)
+}
+
+#[get("/investments/add")]
+pub async fn investments_add(conn: DBConnection) -> Template {
+    let investors = InvestorsControl::get_investors(&conn).await.unwrap();
+    let investors_id = investors.iter().map(|user| user.id.to_string()).collect();
+
+    let investors_name = investors.into_iter().map(|user| user.name).collect();
+
+    let games = GamesControl::get_games(&conn).await.unwrap();
+    let games_id = games.iter().map(|game| game.id.to_string()).collect();
+
+    let games_name = games.into_iter().map(|game| game.name).collect();
+
+    let ctx = CustomContext::<String> {
+        values: vec![],
+        table: "Investments",
+        errors: vec![],
+        content: vec![games_id, games_name, investors_id, investors_name],
+    };
+
+    Template::render("investments_add", ctx)
+}
+
+#[post("/investments/add", data = "<form>")]
+pub async fn investments_add_post<'r>(
+    conn: DBConnection,
+    mut form: Form<Contextual<'r, InvestmentsForm<'r>>>,
+) -> Result<Redirect, Template> {
+    let investment = std::mem::replace(&mut form.value, None).unwrap().add;
+    let mut errs = Vec::new();
+
+    match investment {
+        Err(errors) => {
+            let names = errors
+                .iter()
+                .map(|err| {
+                    let name = err.name.as_ref().unwrap().to_string();
+                    name.rsplit_once('.')
+                        .unwrap()
+                        .1
+                        .replace("_", " ")
+                        .to_string()
+                })
+                .collect();
+            errs.push(ServerError::NullValues(names).to_string());
+        }
+        Ok(investment) => {
+            let investment = NewInvestment::from(investment);
+            if let Err(err) = investment {
+                errs.push(err.to_string());
+            } else {
+                if let Some(err) = InvestmentsControl::add_investment(&conn, investment.unwrap()).await.err() {
+                    errs.push(err.to_string());
+                }
+            }
+        }
+    }
+
+    if !errs.is_empty() {
+        let ctx = CustomContext::<String> {
+            values: vec![],
+            table: "Investments",
+            errors: errs,
+            content: vec![],
+        };
+        Err(Template::render("investments_add", ctx))
+    } else {
+        Ok(Redirect::to(uri!(investments)))
+    }
+}
+
+#[get("/investments/edit?<id>")]
+pub async fn investments_edit<'r>(conn: DBConnection, id: i32) -> Template {
+    let investment = InvestmentsControl::get_investment_by_id(&conn, id).await.unwrap();
+    let investors = InvestorsControl::get_investors(&conn).await.unwrap();
+    let investors_id = investors.iter().map(|user| user.id.to_string()).collect();
+
+    let investors_name = investors.into_iter().map(|user| user.name).collect();
+
+    let games = GamesControl::get_games(&conn).await.unwrap();
+    let games_id = games.iter().map(|game| game.id.to_string()).collect();
+
+    let games_name = games.into_iter().map(|game| game.name).collect();
+
+    let ctx = CustomContext {
+        values: vec![investment],
+        table: "Investments",
+        errors: vec![],
+        content: vec![games_id, games_name, investors_id, investors_name],
+    };
+
+    Template::render("investments_edit", ctx)
+}
+
+#[post("/investments/edit?<id>", data = "<form>")]
+pub async fn investments_edit_post<'r>(
+    conn: DBConnection,
+    id: i32,
+    mut form: Form<Contextual<'r, InvestmentsForm<'r>>>,
+) -> Result<Redirect, Template> {
+    let investment = std::mem::replace(&mut form.value, None).unwrap().add;
+    let mut errs = Vec::new();
+
+    match investment {
+        Err(errors) => {
+            let names = errors
+                .iter()
+                .map(|err| {
+                    let name = err.name.as_ref().unwrap().to_string();
+                    name.rsplit_once('.')
+                        .unwrap()
+                        .1
+                        .replace("_", " ")
+                        .to_string()
+                })
+                .collect();
+            errs.push(ServerError::NullValues(names).to_string());
+        }
+        Ok(investment) => {
+            let investment = NewInvestment::from(investment);
+            if let Err(err) = investment {
+                errs.push(err.to_string());
+            } else {
+                if let Some(err) = InvestmentsControl::update_investment(&conn, id, investment.unwrap()).await.err() {
+                    errs.push(err.to_string());
+                }
+            }
+        }
+    }
+
+    if !errs.is_empty() {
+        let investment = InvestmentsControl::get_investment_by_id(&conn, id).await.unwrap();
+        let ctx = CustomContext {
+            values: vec![investment],
+            table: "Investments",
+            errors: errs,
+            content: vec![],
+        };
+        Err(Template::render("investments_edit", ctx))
+    } else {
+        Ok(Redirect::to(uri!(investments)))
+    }
+}
+
+#[post("/investments/delete?<id>")]
+pub async fn investments_delete_post<'r>(conn: DBConnection, id: i32) -> Result<Redirect, Template> {
+    InvestmentsControl::delete_investment(&conn, id).await.unwrap();
+
+    Ok(Redirect::to(uri!(investments)))
 }

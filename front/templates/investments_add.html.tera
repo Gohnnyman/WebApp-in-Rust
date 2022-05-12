@@ -1,0 +1,28 @@
+{% extends "base" %}
+
+{% block content %}
+
+    <form action="/investments/add" method="post", enctype="multipart/form-data">   
+      <label for="investor_id">Інвестор:</label>
+      <select id="investor_id" name="add.investor_id">
+        {% for i in content.0 %}
+        <option value={{i}}>{{content.1[loop.index0]}}</option>
+        {% endfor %}
+      </select><br>
+
+      <label for="game_id">Гра:</label>
+      <select id="game_id" name="add.game_id">
+        {% for i in content.2 %}
+          <option value={{i}}>{{content.3[loop.index0]}}</option>
+        {% endfor %}
+      </select><br>
+        
+        <label for="position"> Процент доходів: </label>
+        <input type="text" id="share" name="add.share"><br>
+        
+        <label for="invested">Зарплатня:</label>
+        <input type="text" id="invested" name="add.invested"><br>
+
+        <input type="submit" value="Додати" name="submit_button">
+    </form>
+{% endblock content %}

@@ -63,7 +63,7 @@ pub struct Investors {
 }
 
 #[derive(Queryable)]
-pub struct InvestorsGames {
+pub struct Investments {
     pub id: i32,
     pub investor_id: i32,
     pub game_id: i32,

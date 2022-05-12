@@ -39,7 +39,7 @@ map Donations {
     Donation_time => DATETIME
 }
 
-map Investors_Games {
+map Investments {
     id => UNIQUEIDENTIFIER
     Investor_id => INT
     Game_id => INT
@@ -64,9 +64,9 @@ map Users {
 }
 
 Publishers::id --> Games::Publisher_id
-Investors::id --> Investors_Games::Investor_id
+Investors::id --> Investments::Investor_id
 Games::id --> Donations::Game_id
-Games::id --> Investors_Games::Game_id
+Games::id --> Investments::Game_id
 Games::id --> Jobs::Game_id
 Staff::id --> Jobs::Staff_id
 Donations::User_id <-- Users::id
