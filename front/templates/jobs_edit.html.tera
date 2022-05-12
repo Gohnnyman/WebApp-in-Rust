@@ -1,0 +1,39 @@
+{% extends "base" %}
+
+{% block content %}
+
+    <form action="/jobs/edit?id={{ values.0.id }}" method="post", enctype="multipart/form-data">   
+        <label for="game_id">Гра:</label>
+        <select id="game_id" name="add.game_id">
+          {% for i in content.0 %}
+            <option value={{i}} {% if values.0.game_id ~ "" == i%} selected {% endif %}>{{content.1[loop.index0]}}</option>
+          {% endfor %}
+        </select><br>
+
+        <label for="staff_id">Робітник:</label>
+        <select id="staff_id" name="add.staff_id">
+          {% for i in content.2 %}
+            <option value={{i}} {% if values.0.staff_id ~ "" == i%} selected {% endif %}>{{content.3[loop.index0]}}</option>
+          {% endfor %}
+        </select><br>
+        
+        <label for="position">Позиція:</label>
+        <input type="text" id="position" name="add.position" value = "{{ values.0.position }}"><br>
+        
+        <label for="first_work_day">Перший день:</label>
+        <input type="date" id="first_work_day" name="add.first_work_day" value="{{ values.0.first_work_day }}"><br>
+        
+        <label for="last_work_day">Останній день:</label>
+        <input type="date" id="last_work_day" name="add.last_work_day" value="{{ values.0.last_work_day }}"><br>
+
+        <label for="salary">Зарплатня:</label>
+        <input type="text" id="salary" name="add.salary" value = "{{ values.0.salary }}"><br>
+
+        <input type="submit" value="Змінити" name="submit_button">
+    </form>
+
+    <form action="/jobs/delete?id={{ values.0.id }}" method="post", enctype="multipart/form-data">   
+        <input type="submit" value="Видалити", name="submit_button">
+    </form>
+
+{% endblock content %}

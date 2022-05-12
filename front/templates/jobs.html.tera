@@ -1,0 +1,29 @@
+{% extends "base" %}
+
+{% block content %}
+    <h3> {{ table }} </h3>
+    <table>
+        <th> Id </th>    
+        <th> Гра </th>    
+        <th> Робітник </th>     
+        <th> Позиція </th>     
+        <th> Перший день </th>     
+        <th> Останній день </th>     
+        <th> Зарплатня </th>    
+        <th> </th>
+        {% for job in values %}
+            <tr>
+                <td> {{job.id}} </td>
+                <td> {{job.game}} </td>
+                <td> {{job.staff}} </td>
+                <td> {{job.position}} </td>
+                <td> {{job.first_work_day}} </td>
+                <td> {{job.last_work_day}} </td>
+                <td> {{job.salary}} &#8372;</td>
+                <td> <a href="/jobs/edit?id={{ job.id }}" class="button"> Змінити </a> </td>
+            </tr>
+        {% endfor %}
+    </table>
+
+    <a href="/jobs/add" class="button" style="margin-top: 30px"> Додати </a>
+{% endblock content %}

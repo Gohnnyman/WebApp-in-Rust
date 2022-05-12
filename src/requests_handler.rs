@@ -89,6 +89,21 @@ pub struct DonationsForm<'f> {
     add: form::Result<'f, AddDonation>,
 }
 
+#[derive(Debug, FromForm)]
+pub struct AddJob {
+    pub game_id: i32,
+    pub staff_id: i32,
+    pub position: String,
+    pub first_work_day: String,
+    pub last_work_day: String,
+    pub salary: f64,
+}
+
+#[derive(Debug, FromForm)]
+pub struct JobsForm<'f> {
+    add: form::Result<'f, AddJob>,
+}
+
 #[get("/games")]
 pub async fn games(conn: DBConnection) -> Template {
     let ctx = CustomContext {
@@ -1038,4 +1053,169 @@ pub async fn donations_delete_post<'r>(conn: DBConnection, id: i32) -> Result<Re
     DonationsControl::delete_donation(&conn, id).await.unwrap();
 
     Ok(Redirect::to(uri!(donations)))
+}
+
+#[get("/jobs")]
+pub async fn jobs(conn: DBConnection) -> Template {
+    let ctx = CustomContext {
+        values: JobsControl::get_jobs(&conn).await.unwrap(),
+        table: "Jobs",
+        errors: vec![],
+        content: vec![],
+    };
+
+    Template::render("jobs", ctx)
+}
+
+#[get("/jobs/add")]
+pub async fn jobs_add(conn: DBConnection) -> Template {
+    let staff = StaffControl::get_staff(&conn).await.unwrap();
+    let staff_id = staff.iter().map(|user| user.id.to_string()).collect();
+
+    let staff_name = staff.into_iter().map(|user| user.name).collect();
+
+    let games = GamesControl::get_games(&conn).await.unwrap();
+    let games_id = games.iter().map(|game| game.id.to_string()).collect();
+
+    let games_name = games.into_iter().map(|game| game.name).collect();
+
+    let ctx = CustomContext::<String> {
+        values: vec![],
+        table: "Jobs",
+        errors: vec![],
+        content: vec![games_id, games_name, staff_id, staff_name],
+    };
+
+    Template::render("jobs_add", ctx)
+}
+
+#[post("/jobs/add", data = "<form>")]
+pub async fn jobs_add_post<'r>(
+    conn: DBConnection,
+    mut form: Form<Contextual<'r, JobsForm<'r>>>,
+) -> Result<Redirect, Template> {
+    let job = std::mem::replace(&mut form.value, None).unwrap().add;
+    let mut errs = Vec::new();
+
+    match job {
+        Err(errors) => {
+            let names = errors
+                .iter()
+                .map(|err| {
+                    let name = err.name.as_ref().unwrap().to_string();
+                    name.rsplit_once('.')
+                        .unwrap()
+                        .1
+                        .replace("_", " ")
+                        .to_string()
+                })
+                .collect();
+            errs.push(ServerError::NullValues(names).to_string());
+        }
+        Ok(job) => {
+            let job = NewJob::from(job);
+            if let Err(err) = job {
+                errs.push(err.to_string());
+            } else {
+                if let Some(err) = JobsControl::add_job(&conn, job.unwrap()).await.err() {
+                    errs.push(err.to_string());
+                }
+            }
+        }
+    }
+
+    if !errs.is_empty() {
+        let ctx = CustomContext::<String> {
+            values: vec![],
+            table: "Jobs",
+            errors: errs,
+            content: vec![],
+        };
+        Err(Template::render("jobs_add", ctx))
+    } else {
+        Ok(Redirect::to(uri!(jobs)))
+    }
+}
+
+#[get("/jobs/edit?<id>")]
+pub async fn jobs_edit<'r>(conn: DBConnection, id: i32) -> Template {
+    let mut job = JobsControl::get_job_by_id(&conn, id).await.unwrap();
+    job.change_date_format("%d-%m-%Y", "%Y-%m-%d")
+        .unwrap();
+    let staff = StaffControl::get_staff(&conn).await.unwrap();
+    let staff_id = staff.iter().map(|user| user.id.to_string()).collect();
+
+    let staff_name = staff.into_iter().map(|user| user.name).collect();
+
+    let games = GamesControl::get_games(&conn).await.unwrap();
+    let games_id = games.iter().map(|game| game.id.to_string()).collect();
+
+    let games_name = games.into_iter().map(|game| game.name).collect();
+
+    let ctx = CustomContext {
+        values: vec![job],
+        table: "Jobs",
+        errors: vec![],
+        content: vec![games_id, games_name, staff_id, staff_name],
+    };
+
+    Template::render("jobs_edit", ctx)
+}
+
+#[post("/jobs/edit?<id>", data = "<form>")]
+pub async fn jobs_edit_post<'r>(
+    conn: DBConnection,
+    id: i32,
+    mut form: Form<Contextual<'r, JobsForm<'r>>>,
+) -> Result<Redirect, Template> {
+    let job = std::mem::replace(&mut form.value, None).unwrap().add;
+    let mut errs = Vec::new();
+
+    match job {
+        Err(errors) => {
+            let names = errors
+                .iter()
+                .map(|err| {
+                    let name = err.name.as_ref().unwrap().to_string();
+                    name.rsplit_once('.')
+                        .unwrap()
+                        .1
+                        .replace("_", " ")
+                        .to_string()
+                })
+                .collect();
+            errs.push(ServerError::NullValues(names).to_string());
+        }
+        Ok(job) => {
+            let job = NewJob::from(job);
+            if let Err(err) = job {
+                errs.push(err.to_string());
+            } else {
+                if let Some(err) = JobsControl::update_job(&conn, id, job.unwrap()).await.err() {
+                    errs.push(err.to_string());
+                }
+            }
+        }
+    }
+
+    if !errs.is_empty() {
+        let mut job = JobsControl::get_job_by_id(&conn, id).await.unwrap();
+        job.change_date_format("%d-%m-%Y", "%Y-%m-%d").unwrap();
+        let ctx = CustomContext {
+            values: vec![job],
+            table: "Jobs",
+            errors: errs,
+            content: vec![],
+        };
+        Err(Template::render("jobs_edit", ctx))
+    } else {
+        Ok(Redirect::to(uri!(jobs)))
+    }
+}
+
+#[post("/jobs/delete?<id>")]
+pub async fn jobs_delete_post<'r>(conn: DBConnection, id: i32) -> Result<Redirect, Template> {
+    JobsControl::delete_job(&conn, id).await.unwrap();
+
+    Ok(Redirect::to(uri!(jobs)))
 }

@@ -34,8 +34,8 @@ pub struct Jobs {
     pub game_id: i32,
     pub staff_id: i32,
     pub position: String,
-    pub first_work_day: PgDate,
-    pub last_work_day: PgDate,
+    pub first_work_day: chrono::NaiveDate,
+    pub last_work_day: Option<chrono::NaiveDate>,
     pub salary: PgMoney,
 }
 
