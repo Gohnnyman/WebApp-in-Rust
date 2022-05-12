@@ -21,12 +21,11 @@ pub struct DBConnection(rdiesel::PgConnection);
 #[launch]
 fn start() -> _ {
     dotenv().ok();
-
-    // config.address = std::net::IpAddr::V4(std::net::Ipv4Addr::new(192, 168, 1, 5));
     rocket::build()
         .mount(
             "/",
             routes![
+                index,
                 games,
                 games_delete_post,
                 games_edit,

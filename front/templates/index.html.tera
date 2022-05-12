@@ -1,0 +1,15 @@
+{% extends "base" %}
+
+{% block content %}
+    Таблиці: 
+    <ul>
+        <li> <a href="/donations"> Донати </a> </li>
+        <li> <a href="/games"> Ігри </a> </li>
+        <li> <a href="/investors"> Інвестори </a> </li>
+        <li> <a href="/jobs"> Позиції працівників </a> </li>
+        <li> <a href="/publishers"> Видавництва </a></li>
+        <li> <a href="/staff"> Працівники </a></li>
+        <li> <a href="/users"> Користувачі </a></li>
+    </ul>
+    <a href="/users/add" class="button" style="margin-top: 30px"> Додати </a>
+{% endblock content %}

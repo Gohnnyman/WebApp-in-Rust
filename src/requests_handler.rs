@@ -104,6 +104,18 @@ pub struct JobsForm<'f> {
     add: form::Result<'f, AddJob>,
 }
 
+#[get("/")]
+pub async fn index() -> Template {
+    let ctx = CustomContext {
+        values: vec![""],
+        table: "",
+        errors: vec![],
+        content: vec![],
+    };
+
+    Template::render("index", ctx)
+}
+
 #[get("/games")]
 pub async fn games(conn: DBConnection) -> Template {
     let ctx = CustomContext {
