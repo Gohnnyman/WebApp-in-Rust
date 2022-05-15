@@ -2,7 +2,7 @@ use diesel::pg::data_types::{PgDate, PgMoney};
 use diesel::Queryable;
 
 #[derive(Queryable, Debug)]
-pub struct Publishers {
+pub struct Publisher {
     pub id: i32,
     pub name: String,
     pub price: PgMoney,

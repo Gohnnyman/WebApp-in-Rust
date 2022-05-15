@@ -1,3 +1,4 @@
+use crate::controllers::*;
 use crate::errors::ServerError;
 use crate::models::*;
 use crate::requests_handler::AddPublisher;
@@ -35,8 +36,8 @@ pub struct PublishersControl {
     pub popularity: i16,
 }
 
-impl std::convert::From<Publishers> for PublishersControl {
-    fn from(publishers_struct: Publishers) -> Self {
+impl std::convert::From<Publisher> for PublishersControl {
+    fn from(publishers_struct: Publisher) -> Self {
         PublishersControl {
             id: publishers_struct.id,
             name: publishers_struct.name,
@@ -47,12 +48,43 @@ impl std::convert::From<Publishers> for PublishersControl {
 }
 
 impl PublishersControl {
+    pub async fn get_statistic(
+        conn: &DBConnection,
+        id_for_lookup: i32,
+    ) -> (i32, Vec<GamesControl>) {
+        (
+            id_for_lookup,
+            PublishersControl::get_games(conn, id_for_lookup).await,
+        )
+    }
+
+    pub async fn get_games(conn: &DBConnection, id_for_lookup: i32) -> Vec<GamesControl> {
+        use crate::schema::games;
+        use crate::schema::publishers::dsl::*;
+
+        let table = conn
+            .run(move |sql_conn| -> Vec<(Publisher, Game)> {
+                publishers
+                    .filter(id.eq(id_for_lookup))
+                    .inner_join(games::table)
+                    .load(sql_conn)
+                    .unwrap()
+            })
+            .await;
+
+        let mut vec = Vec::new();
+        for (_, game) in table {
+            vec.push(GamesControl::make_games_control(conn, game).await);
+        }
+
+        vec
+    }
     pub async fn get_publishers(conn: &DBConnection) -> Result<Vec<PublishersControl>> {
         use crate::schema::publishers::dsl::*;
 
         let results = conn
-            .run(move |sql_conn| -> Result<Vec<Publishers>> {
-                Ok(publishers.order(id.asc()).load::<Publishers>(sql_conn)?)
+            .run(move |sql_conn| -> Result<Vec<Publisher>> {
+                Ok(publishers.order(id.asc()).load::<Publisher>(sql_conn)?)
             })
             .await?;
 
@@ -66,7 +98,7 @@ impl PublishersControl {
         use crate::schema::publishers::dsl::*;
 
         conn.run(move |sql_conn| -> Result<PublishersControl> {
-            let result: Publishers = publishers
+            let result: Publisher = publishers
                 .filter(id.eq(id_for_lookup))
                 .first(sql_conn)
                 .map_err(|_| ServerError::InvalidValue(vec!["Id".to_string()]))?;
@@ -81,7 +113,7 @@ impl PublishersControl {
         conn.run(move |sql_connection| -> Result<()> {
             diesel::insert_into(publishers)
                 .values(&publisher)
-                .get_result::<Publishers>(sql_connection)
+                .get_result::<Publisher>(sql_connection)
                 .map_err(|err| match err {
                     DieselError::DatabaseError(_, info) => {
                         ServerError::InvalidForeignKey(info.message().to_string())
@@ -107,7 +139,7 @@ impl PublishersControl {
                     price.eq(publisher.price),
                     popularity.eq(publisher.popularity),
                 ))
-                .get_result::<Publishers>(sql_connection)
+                .get_result::<Publisher>(sql_connection)
                 .map_err(|err| match err {
                     DieselError::DatabaseError(_, info) => {
                         ServerError::InvalidForeignKey(info.message().to_string())
@@ -125,7 +157,7 @@ impl PublishersControl {
         conn.run(move |sql_conn| -> Result<()> {
             diesel::delete(publishers)
                 .filter(&id.eq(id_for_delete))
-                .get_result::<Publishers>(sql_conn)
+                .get_result::<Publisher>(sql_conn)
                 .map_err(|_| ServerError::InvalidValue(vec!["Id".to_string()]))?;
             Ok(())
         })

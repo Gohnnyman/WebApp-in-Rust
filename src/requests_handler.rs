@@ -7,6 +7,13 @@ use rocket::response::Redirect;
 use rocket::serde::Serialize;
 use rocket_dyn_templates::Template;
 
+#[derive(Serialize)]
+struct CustomContext<'a, T: Serialize, F: Serialize> {
+    values: Vec<T>,
+    table: &'a str,
+    errors: Vec<String>,
+    content: Vec<Vec<F>>,
+}
 
 #[derive(Debug, FromForm)]
 pub struct AddGame {
@@ -122,19 +129,11 @@ pub async fn index() -> Template {
     Template::render("index", ctx)
 }
 
-#[derive(Serialize)]
-struct CustomContext<'a, T: Serialize, F: Serialize> {
-    values: Vec<T>,
-    table: &'a str,
-    errors: Vec<String>,
-    content: Vec<Vec<F>>,
-}
-
 #[get("/games?<id>")]
 pub async fn games(conn: DBConnection, id: Option<i32>) -> Template {
     let mut content = Vec::new();
     if id.is_some() {
-        let stat = GamesControl::get_statistic(&conn, id.unwrap()).await; 
+        let stat = GamesControl::get_statistic(&conn, id.unwrap()).await;
         content.push(stat);
     }
 
@@ -305,13 +304,18 @@ pub async fn games_delete_post<'r>(conn: DBConnection, id: i32) -> Result<Redire
     Ok(Redirect::to(uri!(games(None::<i32>))))
 }
 
-#[get("/publishers")]
-pub async fn publishers(conn: DBConnection) -> Template {
-    let ctx = CustomContext::<_, String> {
+#[get("/publishers?<id>")]
+pub async fn publishers(conn: DBConnection, id: Option<i32>) -> Template {
+    let mut content = Vec::new();
+    if id.is_some() {
+        let stat = PublishersControl::get_statistic(&conn, id.unwrap()).await;
+        content.push(stat);
+    }
+    let ctx = CustomContext {
         values: PublishersControl::get_publishers(&conn).await.unwrap(),
         table: "Publishers",
         errors: vec![],
-        content: vec![],
+        content: vec![content],
     };
 
     Template::render("publishers", ctx)
@@ -376,7 +380,7 @@ pub async fn publishers_add_post<'r>(
         };
         Err(Template::render("publishers_add", ctx))
     } else {
-        Ok(Redirect::to(uri!(publishers)))
+        Ok(Redirect::to(uri!(publishers(None::<i32>))))
     }
 }
 
@@ -448,7 +452,7 @@ pub async fn publishers_edit_post<'r>(
         };
         Err(Template::render("publishers_edit", ctx))
     } else {
-        Ok(Redirect::to(uri!(publishers)))
+        Ok(Redirect::to(uri!(publishers(None::<i32>))))
     }
 }
 
@@ -458,7 +462,7 @@ pub async fn publishers_delete_post<'r>(conn: DBConnection, id: i32) -> Result<R
         .await
         .unwrap();
 
-    Ok(Redirect::to(uri!(publishers)))
+    Ok(Redirect::to(uri!(publishers(None::<i32>))))
 }
 
 #[get("/investors")]

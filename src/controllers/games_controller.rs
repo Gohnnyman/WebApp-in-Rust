@@ -61,14 +61,19 @@ pub struct GamesControl {
 
 impl GamesControl {
     pub async fn get_statistic(
-        conn: &DBConnection, 
-        id_for_lookup: i32
-    ) -> (i32, Vec<JobsControl>, Vec<DonationsControl>, Vec<InvestmentsControl>) {
+        conn: &DBConnection,
+        id_for_lookup: i32,
+    ) -> (
+        i32,
+        Vec<JobsControl>,
+        Vec<DonationsControl>,
+        Vec<InvestmentsControl>,
+    ) {
         (
             id_for_lookup,
             GamesControl::get_game_staff(conn, id_for_lookup).await,
             GamesControl::get_donations(conn, id_for_lookup).await,
-            GamesControl::get_investments(conn, id_for_lookup).await
+            GamesControl::get_investments(conn, id_for_lookup).await,
         )
     }
 
@@ -76,12 +81,13 @@ impl GamesControl {
         conn: &DBConnection,
         id_for_lookup: i32,
     ) -> Vec<InvestmentsControl> {
-        use crate::schema::investments;
         use crate::schema::games::dsl::*;
+        use crate::schema::investments;
 
         let table = conn
             .run(move |sql_conn| -> Vec<(Game, Investment)> {
-                games.filter(id.eq(id_for_lookup))
+                games
+                    .filter(id.eq(id_for_lookup))
                     .inner_join(investments::table)
                     .load(sql_conn)
                     .unwrap()
@@ -90,24 +96,20 @@ impl GamesControl {
 
         let mut vec = Vec::new();
         for (_, investment) in table {
-            vec.push(
-                InvestmentsControl::make_investments_control(conn, investment).await
-            );
+            vec.push(InvestmentsControl::make_investments_control(conn, investment).await);
         }
 
         vec
     }
 
-    pub async fn get_donations(
-        conn: &DBConnection,
-        id_for_lookup: i32,
-    ) -> Vec<DonationsControl> {
+    pub async fn get_donations(conn: &DBConnection, id_for_lookup: i32) -> Vec<DonationsControl> {
         use crate::schema::donations;
         use crate::schema::games::dsl::*;
 
         let table = conn
             .run(move |sql_conn| -> Vec<(Game, Donation)> {
-                games.filter(id.eq(id_for_lookup))
+                games
+                    .filter(id.eq(id_for_lookup))
                     .inner_join(donations::table)
                     .load(sql_conn)
                     .unwrap()
@@ -116,24 +118,20 @@ impl GamesControl {
 
         let mut vec = Vec::new();
         for (_, donation) in table {
-            vec.push(
-                DonationsControl::make_donations_control(conn, donation).await
-            );
+            vec.push(DonationsControl::make_donations_control(conn, donation).await);
         }
 
         vec
     }
 
-    pub async fn get_game_staff(
-        conn: &DBConnection,
-        id_for_lookup: i32,
-    ) -> Vec<JobsControl> {
-        use crate::schema::jobs;
+    pub async fn get_game_staff(conn: &DBConnection, id_for_lookup: i32) -> Vec<JobsControl> {
         use crate::schema::games::dsl::*;
+        use crate::schema::jobs;
 
         let table = conn
             .run(move |sql_conn| -> Vec<(Game, Job)> {
-                games.filter(id.eq(id_for_lookup))
+                games
+                    .filter(id.eq(id_for_lookup))
                     .inner_join(jobs::table)
                     .load(sql_conn)
                     .unwrap()
@@ -142,9 +140,7 @@ impl GamesControl {
 
         let mut vec = Vec::new();
         for (_, job) in table {
-            vec.push(
-                JobsControl::make_jobs_control(conn, job).await
-            );
+            vec.push(JobsControl::make_jobs_control(conn, job).await);
         }
 
         vec

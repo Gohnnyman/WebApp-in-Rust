@@ -9,7 +9,6 @@
     {% endif %}
     <h3> {{ table }} </h3>
     <table>
-        <th> Id </th>    
         <th> Ім'я </th>    
         <th> Жанр </th>    
         <th> Дата виходу </th>     
@@ -25,7 +24,6 @@
             style="background-color: #f82c2cc4" 
             {% endif %} 
             >
-                <td> {{game.id}} </td>
                 <td> {{game.name}} </td>
                 <td> {{game.genre}} </td>
                 <td> {{game.release_date}} </td>
