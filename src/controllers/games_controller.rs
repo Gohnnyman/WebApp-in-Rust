@@ -1,3 +1,4 @@
+use crate::controllers::*;
 use crate::errors::ServerError;
 use crate::models::*;
 use crate::requests_handler::AddGame;
@@ -45,26 +46,121 @@ impl NewGame {
         })
     }
 }
-#[derive(Serialize)]
+#[derive(Serialize, Debug)]
 pub struct GamesControl {
     pub id: i32,
     pub name: String,
     pub genre: String,
     pub release_date: String,
     pub prime_cost: f64,
+    pub publisher: String,
     pub publisher_id: i32,
     pub cost: f64,
     pub is_subscribable: bool,
 }
 
-impl std::convert::From<Games> for GamesControl {
-    fn from(games_struct: Games) -> Self {
+impl GamesControl {
+    pub async fn get_statistic(
+        conn: &DBConnection, 
+        id_for_lookup: i32
+    ) -> (i32, Vec<JobsControl>, Vec<DonationsControl>, Vec<InvestmentsControl>) {
+        (
+            id_for_lookup,
+            GamesControl::get_game_staff(conn, id_for_lookup).await,
+            GamesControl::get_donations(conn, id_for_lookup).await,
+            GamesControl::get_investments(conn, id_for_lookup).await
+        )
+    }
+
+    pub async fn get_investments(
+        conn: &DBConnection,
+        id_for_lookup: i32,
+    ) -> Vec<InvestmentsControl> {
+        use crate::schema::investments;
+        use crate::schema::games::dsl::*;
+
+        let table = conn
+            .run(move |sql_conn| -> Vec<(Game, Investment)> {
+                games.filter(id.eq(id_for_lookup))
+                    .inner_join(investments::table)
+                    .load(sql_conn)
+                    .unwrap()
+            })
+            .await;
+
+        let mut vec = Vec::new();
+        for (_, investment) in table {
+            vec.push(
+                InvestmentsControl::make_investments_control(conn, investment).await
+            );
+        }
+
+        vec
+    }
+
+    pub async fn get_donations(
+        conn: &DBConnection,
+        id_for_lookup: i32,
+    ) -> Vec<DonationsControl> {
+        use crate::schema::donations;
+        use crate::schema::games::dsl::*;
+
+        let table = conn
+            .run(move |sql_conn| -> Vec<(Game, Donation)> {
+                games.filter(id.eq(id_for_lookup))
+                    .inner_join(donations::table)
+                    .load(sql_conn)
+                    .unwrap()
+            })
+            .await;
+
+        let mut vec = Vec::new();
+        for (_, donation) in table {
+            vec.push(
+                DonationsControl::make_donations_control(conn, donation).await
+            );
+        }
+
+        vec
+    }
+
+    pub async fn get_game_staff(
+        conn: &DBConnection,
+        id_for_lookup: i32,
+    ) -> Vec<JobsControl> {
+        use crate::schema::jobs;
+        use crate::schema::games::dsl::*;
+
+        let table = conn
+            .run(move |sql_conn| -> Vec<(Game, Job)> {
+                games.filter(id.eq(id_for_lookup))
+                    .inner_join(jobs::table)
+                    .load(sql_conn)
+                    .unwrap()
+            })
+            .await;
+
+        let mut vec = Vec::new();
+        for (_, job) in table {
+            vec.push(
+                JobsControl::make_jobs_control(conn, job).await
+            );
+        }
+
+        vec
+    }
+
+    pub async fn make_games_control(pool: &DBConnection, games_struct: Game) -> Self {
         let release_date = NaiveDate::from_num_days_from_ce(games_struct.release_date.0);
         let release_date = NaiveDate::from_ymd(
             release_date.year() + 1999,
             release_date.month(),
             release_date.day(),
         );
+
+        let publishers = PublishersControl::get_publisher_by_id(&pool, games_struct.publisher_id)
+            .await
+            .unwrap();
         let release_date = release_date.format("%d-%m-%Y").to_string();
         GamesControl {
             id: games_struct.id,
@@ -72,14 +168,12 @@ impl std::convert::From<Games> for GamesControl {
             genre: games_struct.genre,
             release_date: release_date,
             prime_cost: games_struct.prime_cost.0 as f64 / 100f64,
+            publisher: publishers.name,
             publisher_id: games_struct.publisher_id,
             cost: games_struct.cost.0 as f64 / 100f64,
             is_subscribable: games_struct.is_subscribable,
         }
     }
-}
-
-impl GamesControl {
     pub fn change_date_format(&mut self, from: &str, to: &str) -> Result<()> {
         let release_date = NaiveDate::parse_from_str(&self.release_date, from)?;
         self.release_date = release_date.format(to).to_string();
@@ -90,25 +184,34 @@ impl GamesControl {
         use crate::schema::games::dsl::*;
 
         let results = conn
-            .run(move |sql_conn| -> Result<Vec<Games>> {
-                Ok(games.order(id.asc()).load::<Games>(sql_conn)?)
+            .run(move |sql_conn| -> Result<Vec<Game>> {
+                Ok(games.order(id.asc()).load::<Game>(sql_conn)?)
             })
             .await?;
 
-        Ok(results.into_iter().map(GamesControl::from).collect())
+        let mut games_result: Vec<GamesControl> = vec![];
+
+        for game in results {
+            games_result.push(GamesControl::make_games_control(conn, game).await);
+        }
+
+        Ok(games_result)
     }
 
     pub async fn get_game_by_id(conn: &DBConnection, id_for_lookup: i32) -> Result<GamesControl> {
         use crate::schema::games::dsl::*;
 
-        conn.run(move |sql_conn| -> Result<GamesControl> {
-            let result: Games = games
-                .filter(id.eq(id_for_lookup))
-                .first(sql_conn)
-                .map_err(|_| ServerError::InvalidValue(vec!["Id".to_string()]))?;
-            Ok(GamesControl::from(result))
-        })
-        .await
+        let game = conn
+            .run(move |sql_conn| -> Result<Game> {
+                let result: Game = games
+                    .filter(id.eq(id_for_lookup))
+                    .first(sql_conn)
+                    .map_err(|_| ServerError::InvalidValue(vec!["Id".to_string()]))?;
+                Ok(result)
+            })
+            .await?;
+
+        Ok(GamesControl::make_games_control(conn, game).await)
     }
 
     pub async fn add_game(conn: &DBConnection, game: NewGame) -> Result<()> {
@@ -117,7 +220,7 @@ impl GamesControl {
         conn.run(move |sql_connection| -> Result<()> {
             diesel::insert_into(games)
                 .values(&game)
-                .get_result::<Games>(sql_connection)
+                .get_result::<Game>(sql_connection)
                 .map_err(|err| match err {
                     DieselError::DatabaseError(_, info) => {
                         ServerError::InvalidForeignKey(info.message().to_string())
@@ -143,7 +246,7 @@ impl GamesControl {
                     cost.eq(game.cost),
                     is_subscribable.eq(game.is_subscribable),
                 ))
-                .get_result::<Games>(sql_connection)
+                .get_result::<Game>(sql_connection)
                 .map_err(|err| match err {
                     DieselError::DatabaseError(_, info) => {
                         ServerError::InvalidForeignKey(info.message().to_string())
@@ -161,7 +264,7 @@ impl GamesControl {
         conn.run(move |sql_conn| -> Result<()> {
             diesel::delete(games)
                 .filter(&id.eq(id_for_delete))
-                .get_result::<Games>(sql_conn)
+                .get_result::<Game>(sql_conn)
                 .map_err(|_| ServerError::InvalidValue(vec!["Id".to_string()]))?;
             Ok(())
         })

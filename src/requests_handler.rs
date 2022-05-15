@@ -7,13 +7,6 @@ use rocket::response::Redirect;
 use rocket::serde::Serialize;
 use rocket_dyn_templates::Template;
 
-#[derive(Serialize)]
-struct CustomContext<'a, T: Serialize> {
-    values: Vec<T>,
-    table: &'a str,
-    errors: Vec<String>,
-    content: Vec<Vec<String>>,
-}
 
 #[derive(Debug, FromForm)]
 pub struct AddGame {
@@ -119,8 +112,8 @@ pub struct InvestmentsForm<'f> {
 
 #[get("/")]
 pub async fn index() -> Template {
-    let ctx = CustomContext {
-        values: vec![""],
+    let ctx = CustomContext::<String, String> {
+        values: vec![],
         table: "",
         errors: vec![],
         content: vec![],
@@ -129,13 +122,27 @@ pub async fn index() -> Template {
     Template::render("index", ctx)
 }
 
-#[get("/games")]
-pub async fn games(conn: DBConnection) -> Template {
+#[derive(Serialize)]
+struct CustomContext<'a, T: Serialize, F: Serialize> {
+    values: Vec<T>,
+    table: &'a str,
+    errors: Vec<String>,
+    content: Vec<Vec<F>>,
+}
+
+#[get("/games?<id>")]
+pub async fn games(conn: DBConnection, id: Option<i32>) -> Template {
+    let mut content = Vec::new();
+    if id.is_some() {
+        let stat = GamesControl::get_statistic(&conn, id.unwrap()).await; 
+        content.push(stat);
+    }
+
     let ctx = CustomContext {
         values: GamesControl::get_games(&conn).await.unwrap(),
         table: "Games",
         errors: vec![],
-        content: vec![],
+        content: vec![content],
     };
 
     Template::render("games", ctx)
@@ -154,7 +161,7 @@ pub async fn games_add(conn: DBConnection) -> Template {
         .map(|publisher| publisher.name)
         .collect();
 
-    let ctx = CustomContext::<String> {
+    let ctx = CustomContext::<String, String> {
         values: vec![],
         table: "Games",
         errors: vec![],
@@ -200,7 +207,7 @@ pub async fn games_add_post<'r>(
     }
 
     if !errs.is_empty() {
-        let ctx = CustomContext::<String> {
+        let ctx = CustomContext::<String, String> {
             values: vec![],
             table: "Games",
             errors: errs,
@@ -208,7 +215,7 @@ pub async fn games_add_post<'r>(
         };
         Err(Template::render("games_add", ctx))
     } else {
-        Ok(Redirect::to(uri!(games)))
+        Ok(Redirect::to(uri!(games(None::<i32>))))
     }
 }
 
@@ -227,7 +234,7 @@ pub async fn games_edit<'r>(conn: DBConnection, id: i32) -> Template {
         .map(|publisher| publisher.name)
         .collect();
 
-    let ctx = CustomContext {
+    let ctx = CustomContext::<_, String> {
         values: vec![game],
         table: "Games",
         errors: vec![],
@@ -279,7 +286,7 @@ pub async fn games_edit_post<'r>(
     if !errs.is_empty() {
         let mut game = GamesControl::get_game_by_id(&conn, id).await.unwrap();
         game.change_date_format("%d-%m-%Y", "%Y-%m-%d").unwrap();
-        let ctx = CustomContext {
+        let ctx = CustomContext::<_, String> {
             values: vec![game],
             table: "Games",
             errors: errs,
@@ -287,7 +294,7 @@ pub async fn games_edit_post<'r>(
         };
         Err(Template::render("games_edit", ctx))
     } else {
-        Ok(Redirect::to(uri!(games)))
+        Ok(Redirect::to(uri!(games(None::<i32>))))
     }
 }
 
@@ -295,12 +302,12 @@ pub async fn games_edit_post<'r>(
 pub async fn games_delete_post<'r>(conn: DBConnection, id: i32) -> Result<Redirect, Template> {
     GamesControl::delete_game(&conn, id).await.unwrap();
 
-    Ok(Redirect::to(uri!(games)))
+    Ok(Redirect::to(uri!(games(None::<i32>))))
 }
 
 #[get("/publishers")]
 pub async fn publishers(conn: DBConnection) -> Template {
-    let ctx = CustomContext {
+    let ctx = CustomContext::<_, String> {
         values: PublishersControl::get_publishers(&conn).await.unwrap(),
         table: "Publishers",
         errors: vec![],
@@ -312,7 +319,7 @@ pub async fn publishers(conn: DBConnection) -> Template {
 
 #[get("/publishers/add")]
 pub async fn publishers_add() -> Template {
-    let ctx = CustomContext::<String> {
+    let ctx = CustomContext::<String, String> {
         values: vec![],
         table: "Publishers",
         errors: vec![],
@@ -361,7 +368,7 @@ pub async fn publishers_add_post<'r>(
     }
 
     if !errs.is_empty() {
-        let ctx = CustomContext::<String> {
+        let ctx = CustomContext::<String, String> {
             values: vec![],
             table: "Publishers",
             errors: errs,
@@ -379,7 +386,7 @@ pub async fn publishers_edit<'r>(conn: DBConnection, id: i32) -> Template {
         .await
         .unwrap();
 
-    let ctx = CustomContext {
+    let ctx = CustomContext::<_, String> {
         values: vec![publisher],
         table: "Publishers",
         errors: vec![],
@@ -433,7 +440,7 @@ pub async fn publishers_edit_post<'r>(
         let publisher = PublishersControl::get_publisher_by_id(&conn, id)
             .await
             .unwrap();
-        let ctx = CustomContext {
+        let ctx = CustomContext::<_, String> {
             values: vec![publisher],
             table: "Publishers",
             errors: errs,
@@ -456,7 +463,7 @@ pub async fn publishers_delete_post<'r>(conn: DBConnection, id: i32) -> Result<R
 
 #[get("/investors")]
 pub async fn investors(conn: DBConnection) -> Template {
-    let ctx = CustomContext {
+    let ctx = CustomContext::<_, String> {
         values: InvestorsControl::get_investors(&conn).await.unwrap(),
         table: "Investors",
         errors: vec![],
@@ -468,7 +475,7 @@ pub async fn investors(conn: DBConnection) -> Template {
 
 #[get("/investors/add")]
 pub async fn investors_add() -> Template {
-    let ctx = CustomContext::<String> {
+    let ctx = CustomContext::<String, String> {
         values: vec![],
         table: "Investors",
         errors: vec![],
@@ -517,7 +524,7 @@ pub async fn investors_add_post<'r>(
     }
 
     if !errs.is_empty() {
-        let ctx = CustomContext::<String> {
+        let ctx = CustomContext::<String, String> {
             values: vec![],
             table: "Investors",
             errors: errs,
@@ -534,7 +541,7 @@ pub async fn investors_edit<'r>(conn: DBConnection, id: i32) -> Template {
     let investor = InvestorsControl::get_investor_by_id(&conn, id)
         .await
         .unwrap();
-    let ctx = CustomContext {
+    let ctx = CustomContext::<_, String> {
         values: vec![investor],
         table: "Investors",
         errors: vec![],
@@ -587,7 +594,7 @@ pub async fn investors_edit_post<'r>(
         let investor = InvestorsControl::get_investor_by_id(&conn, id)
             .await
             .unwrap();
-        let ctx = CustomContext {
+        let ctx = CustomContext::<_, String> {
             values: vec![investor],
             table: "Investors",
             errors: errs,
@@ -608,7 +615,7 @@ pub async fn investors_delete_post<'r>(conn: DBConnection, id: i32) -> Result<Re
 
 #[get("/staff")]
 pub async fn staff(conn: DBConnection) -> Template {
-    let ctx = CustomContext {
+    let ctx = CustomContext::<_, String> {
         values: StaffControl::get_staff(&conn).await.unwrap(),
         table: "Staff",
         errors: vec![],
@@ -620,7 +627,7 @@ pub async fn staff(conn: DBConnection) -> Template {
 
 #[get("/staff/add")]
 pub async fn staff_add() -> Template {
-    let ctx = CustomContext::<String> {
+    let ctx = CustomContext::<String, String> {
         values: vec![],
         table: "Staff",
         errors: vec![],
@@ -666,7 +673,7 @@ pub async fn staff_add_post<'r>(
     }
 
     if !errs.is_empty() {
-        let ctx = CustomContext::<String> {
+        let ctx = CustomContext::<String, String> {
             values: vec![],
             table: "Staff",
             errors: errs,
@@ -683,7 +690,7 @@ pub async fn staff_edit<'r>(conn: DBConnection, id: i32) -> Template {
     let mut staff = StaffControl::get_staff_by_id(&conn, id).await.unwrap();
     staff.change_date_format("%d-%m-%Y", "%Y-%m-%d").unwrap();
 
-    let ctx = CustomContext {
+    let ctx = CustomContext::<_, String> {
         values: vec![staff],
         table: "Staff",
         errors: vec![],
@@ -735,7 +742,7 @@ pub async fn staff_edit_post<'r>(
     if !errs.is_empty() {
         let mut staff = StaffControl::get_staff_by_id(&conn, id).await.unwrap();
         staff.change_date_format("%d-%m-%Y", "%Y-%m-%d").unwrap();
-        let ctx = CustomContext {
+        let ctx = CustomContext::<_, String> {
             values: vec![staff],
             table: "Staff",
             errors: errs,
@@ -756,7 +763,7 @@ pub async fn staff_delete_post<'r>(conn: DBConnection, id: i32) -> Result<Redire
 
 #[get("/users")]
 pub async fn users(conn: DBConnection) -> Template {
-    let ctx = CustomContext {
+    let ctx = CustomContext::<_, String> {
         values: UsersControl::get_users(&conn).await.unwrap(),
         table: "Users",
         errors: vec![],
@@ -768,7 +775,7 @@ pub async fn users(conn: DBConnection) -> Template {
 
 #[get("/users/add")]
 pub async fn users_add() -> Template {
-    let ctx = CustomContext::<String> {
+    let ctx = CustomContext::<String, String> {
         values: vec![],
         table: "Users",
         errors: vec![],
@@ -815,7 +822,7 @@ pub async fn users_add_post<'r>(
     }
 
     if !errs.is_empty() {
-        let ctx = CustomContext::<String> {
+        let ctx = CustomContext::<String, String> {
             values: vec![],
             table: "Users",
             errors: errs,
@@ -832,7 +839,7 @@ pub async fn users_edit<'r>(conn: DBConnection, id: i32) -> Template {
     let mut users = UsersControl::get_user_by_id(&conn, id).await.unwrap();
     users.change_date_format("%d-%m-%Y", "%Y-%m-%d").unwrap();
 
-    let ctx = CustomContext {
+    let ctx = CustomContext::<_, String> {
         values: vec![users],
         table: "Users",
         errors: vec![],
@@ -885,7 +892,7 @@ pub async fn users_edit_post<'r>(
     if !errs.is_empty() {
         let mut users = UsersControl::get_user_by_id(&conn, id).await.unwrap();
         users.change_date_format("%d-%m-%Y", "%Y-%m-%d").unwrap();
-        let ctx = CustomContext {
+        let ctx = CustomContext::<_, String> {
             values: vec![users],
             table: "Users",
             errors: errs,
@@ -906,7 +913,7 @@ pub async fn users_delete_post<'r>(conn: DBConnection, id: i32) -> Result<Redire
 
 #[get("/donations")]
 pub async fn donations(conn: DBConnection) -> Template {
-    let ctx = CustomContext {
+    let ctx = CustomContext::<_, String> {
         values: DonationsControl::get_donations(&conn).await.unwrap(),
         table: "Donations",
         errors: vec![],
@@ -928,7 +935,7 @@ pub async fn donations_add(conn: DBConnection) -> Template {
 
     let games_name = games.into_iter().map(|game| game.name).collect();
 
-    let ctx = CustomContext::<String> {
+    let ctx = CustomContext::<String, String> {
         values: vec![],
         table: "Donations",
         errors: vec![],
@@ -977,7 +984,7 @@ pub async fn donations_add_post<'r>(
     }
 
     if !errs.is_empty() {
-        let ctx = CustomContext::<String> {
+        let ctx = CustomContext::<String, String> {
             values: vec![],
             table: "Donations",
             errors: errs,
@@ -1007,7 +1014,7 @@ pub async fn donations_edit<'r>(conn: DBConnection, id: i32) -> Template {
 
     let games_name = games.into_iter().map(|game| game.name).collect();
 
-    let ctx = CustomContext {
+    let ctx = CustomContext::<_, String> {
         values: vec![donation],
         table: "Donations",
         errors: vec![],
@@ -1061,7 +1068,7 @@ pub async fn donations_edit_post<'r>(
             .await
             .unwrap();
         donation.change_date_format("%d-%m-%Y", "%Y-%m-%d").unwrap();
-        let ctx = CustomContext {
+        let ctx = CustomContext::<_, String> {
             values: vec![donation],
             table: "Donations",
             errors: errs,
@@ -1082,7 +1089,7 @@ pub async fn donations_delete_post<'r>(conn: DBConnection, id: i32) -> Result<Re
 
 #[get("/jobs")]
 pub async fn jobs(conn: DBConnection) -> Template {
-    let ctx = CustomContext {
+    let ctx = CustomContext::<_, String> {
         values: JobsControl::get_jobs(&conn).await.unwrap(),
         table: "Jobs",
         errors: vec![],
@@ -1104,7 +1111,7 @@ pub async fn jobs_add(conn: DBConnection) -> Template {
 
     let games_name = games.into_iter().map(|game| game.name).collect();
 
-    let ctx = CustomContext::<String> {
+    let ctx = CustomContext::<String, String> {
         values: vec![],
         table: "Jobs",
         errors: vec![],
@@ -1150,7 +1157,7 @@ pub async fn jobs_add_post<'r>(
     }
 
     if !errs.is_empty() {
-        let ctx = CustomContext::<String> {
+        let ctx = CustomContext::<String, String> {
             values: vec![],
             table: "Jobs",
             errors: errs,
@@ -1165,8 +1172,7 @@ pub async fn jobs_add_post<'r>(
 #[get("/jobs/edit?<id>")]
 pub async fn jobs_edit<'r>(conn: DBConnection, id: i32) -> Template {
     let mut job = JobsControl::get_job_by_id(&conn, id).await.unwrap();
-    job.change_date_format("%d-%m-%Y", "%Y-%m-%d")
-        .unwrap();
+    job.change_date_format("%d-%m-%Y", "%Y-%m-%d").unwrap();
     let staff = StaffControl::get_staff(&conn).await.unwrap();
     let staff_id = staff.iter().map(|user| user.id.to_string()).collect();
 
@@ -1177,7 +1183,7 @@ pub async fn jobs_edit<'r>(conn: DBConnection, id: i32) -> Template {
 
     let games_name = games.into_iter().map(|game| game.name).collect();
 
-    let ctx = CustomContext {
+    let ctx = CustomContext::<_, String> {
         values: vec![job],
         table: "Jobs",
         errors: vec![],
@@ -1226,7 +1232,7 @@ pub async fn jobs_edit_post<'r>(
     if !errs.is_empty() {
         let mut job = JobsControl::get_job_by_id(&conn, id).await.unwrap();
         job.change_date_format("%d-%m-%Y", "%Y-%m-%d").unwrap();
-        let ctx = CustomContext {
+        let ctx = CustomContext::<_, String> {
             values: vec![job],
             table: "Jobs",
             errors: errs,
@@ -1245,10 +1251,9 @@ pub async fn jobs_delete_post<'r>(conn: DBConnection, id: i32) -> Result<Redirec
     Ok(Redirect::to(uri!(jobs)))
 }
 
-
 #[get("/investments")]
 pub async fn investments(conn: DBConnection) -> Template {
-    let ctx = CustomContext {
+    let ctx = CustomContext::<_, String> {
         values: InvestmentsControl::get_investments(&conn).await.unwrap(),
         table: "Investments",
         errors: vec![],
@@ -1270,7 +1275,7 @@ pub async fn investments_add(conn: DBConnection) -> Template {
 
     let games_name = games.into_iter().map(|game| game.name).collect();
 
-    let ctx = CustomContext::<String> {
+    let ctx = CustomContext::<String, String> {
         values: vec![],
         table: "Investments",
         errors: vec![],
@@ -1308,7 +1313,10 @@ pub async fn investments_add_post<'r>(
             if let Err(err) = investment {
                 errs.push(err.to_string());
             } else {
-                if let Some(err) = InvestmentsControl::add_investment(&conn, investment.unwrap()).await.err() {
+                if let Some(err) = InvestmentsControl::add_investment(&conn, investment.unwrap())
+                    .await
+                    .err()
+                {
                     errs.push(err.to_string());
                 }
             }
@@ -1316,7 +1324,7 @@ pub async fn investments_add_post<'r>(
     }
 
     if !errs.is_empty() {
-        let ctx = CustomContext::<String> {
+        let ctx = CustomContext::<String, String> {
             values: vec![],
             table: "Investments",
             errors: errs,
@@ -1330,7 +1338,9 @@ pub async fn investments_add_post<'r>(
 
 #[get("/investments/edit?<id>")]
 pub async fn investments_edit<'r>(conn: DBConnection, id: i32) -> Template {
-    let investment = InvestmentsControl::get_investment_by_id(&conn, id).await.unwrap();
+    let investment = InvestmentsControl::get_investment_by_id(&conn, id)
+        .await
+        .unwrap();
     let investors = InvestorsControl::get_investors(&conn).await.unwrap();
     let investors_id = investors.iter().map(|user| user.id.to_string()).collect();
 
@@ -1341,7 +1351,7 @@ pub async fn investments_edit<'r>(conn: DBConnection, id: i32) -> Template {
 
     let games_name = games.into_iter().map(|game| game.name).collect();
 
-    let ctx = CustomContext {
+    let ctx = CustomContext::<_, String> {
         values: vec![investment],
         table: "Investments",
         errors: vec![],
@@ -1380,7 +1390,11 @@ pub async fn investments_edit_post<'r>(
             if let Err(err) = investment {
                 errs.push(err.to_string());
             } else {
-                if let Some(err) = InvestmentsControl::update_investment(&conn, id, investment.unwrap()).await.err() {
+                if let Some(err) =
+                    InvestmentsControl::update_investment(&conn, id, investment.unwrap())
+                        .await
+                        .err()
+                {
                     errs.push(err.to_string());
                 }
             }
@@ -1388,8 +1402,10 @@ pub async fn investments_edit_post<'r>(
     }
 
     if !errs.is_empty() {
-        let investment = InvestmentsControl::get_investment_by_id(&conn, id).await.unwrap();
-        let ctx = CustomContext {
+        let investment = InvestmentsControl::get_investment_by_id(&conn, id)
+            .await
+            .unwrap();
+        let ctx = CustomContext::<_, String> {
             values: vec![investment],
             table: "Investments",
             errors: errs,
@@ -1402,8 +1418,13 @@ pub async fn investments_edit_post<'r>(
 }
 
 #[post("/investments/delete?<id>")]
-pub async fn investments_delete_post<'r>(conn: DBConnection, id: i32) -> Result<Redirect, Template> {
-    InvestmentsControl::delete_investment(&conn, id).await.unwrap();
+pub async fn investments_delete_post<'r>(
+    conn: DBConnection,
+    id: i32,
+) -> Result<Redirect, Template> {
+    InvestmentsControl::delete_investment(&conn, id)
+        .await
+        .unwrap();
 
     Ok(Redirect::to(uri!(investments)))
 }

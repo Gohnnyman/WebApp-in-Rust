@@ -42,8 +42,8 @@ pub struct UsersControl {
     pub registration_date: String,
 }
 
-impl std::convert::From<Users> for UsersControl {
-    fn from(users_struct: Users) -> Self {
+impl std::convert::From<User> for UsersControl {
+    fn from(users_struct: User) -> Self {
         let registration_date = NaiveDate::from_num_days_from_ce(users_struct.registration_date.0);
         let registration_date = NaiveDate::from_ymd(
             registration_date.year() + 1999,
@@ -70,8 +70,8 @@ impl UsersControl {
         use crate::schema::users::dsl::*;
 
         let results = conn
-            .run(move |sql_conn| -> Result<Vec<Users>> {
-                Ok(users.order(id.asc()).load::<Users>(sql_conn)?)
+            .run(move |sql_conn| -> Result<Vec<User>> {
+                Ok(users.order(id.asc()).load::<User>(sql_conn)?)
             })
             .await?;
 
@@ -82,7 +82,7 @@ impl UsersControl {
         use crate::schema::users::dsl::*;
 
         conn.run(move |sql_conn| -> Result<UsersControl> {
-            let result: Users = users
+            let result: User = users
                 .filter(id.eq(id_for_lookup))
                 .first(sql_conn)
                 .map_err(|_| ServerError::InvalidValue(vec!["Id".to_string()]))?;
@@ -97,7 +97,7 @@ impl UsersControl {
         conn.run(move |sql_connection| -> Result<()> {
             diesel::insert_into(users)
                 .values(&user)
-                .get_result::<Users>(sql_connection)
+                .get_result::<User>(sql_connection)
                 .map_err(|err| match err {
                     DieselError::DatabaseError(_, info) => {
                         ServerError::InvalidForeignKey(info.message().to_string())
@@ -118,7 +118,7 @@ impl UsersControl {
                     nickname.eq(user.nickname),
                     registration_date.eq(user.registration_date),
                 ))
-                .get_result::<Users>(sql_connection)
+                .get_result::<User>(sql_connection)
                 .map_err(|err| match err {
                     DieselError::DatabaseError(_, info) => {
                         ServerError::InvalidForeignKey(info.message().to_string())
@@ -136,7 +136,7 @@ impl UsersControl {
         conn.run(move |sql_conn| -> Result<()> {
             diesel::delete(users)
                 .filter(&id.eq(id_for_delete))
-                .get_result::<Users>(sql_conn)
+                .get_result::<User>(sql_conn)
                 .map_err(|_| ServerError::InvalidValue(vec!["Id".to_string()]))?;
             Ok(())
         })

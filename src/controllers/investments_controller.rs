@@ -30,7 +30,7 @@ impl NewInvestment {
         })
     }
 }
-#[derive(Serialize)]
+#[derive(Serialize, Debug)]
 pub struct InvestmentsControl {
     pub id: i32,
     pub game: String,
@@ -42,7 +42,10 @@ pub struct InvestmentsControl {
 }
 
 impl InvestmentsControl {
-    pub async fn make_investments_control(conn: &DBConnection, investments_struct: Investments) -> Self {
+    pub async fn make_investments_control(
+        conn: &DBConnection,
+        investments_struct: Investment,
+    ) -> Self {
         let game = GamesControl::get_game_by_id(conn, investments_struct.game_id)
             .await
             .unwrap()
@@ -63,33 +66,37 @@ impl InvestmentsControl {
         }
     }
 
-
     pub async fn get_investments(conn: &DBConnection) -> Result<Vec<InvestmentsControl>> {
         use crate::schema::investments::dsl::*;
 
         let results = conn
-            .run(move |sql_conn| -> Result<Vec<Investments>> {
-                Ok(investments.order(id.asc()).load::<Investments>(sql_conn)?)
+            .run(move |sql_conn| -> Result<Vec<Investment>> {
+                Ok(investments.order(id.asc()).load::<Investment>(sql_conn)?)
             })
             .await?;
 
         let mut investments_result: Vec<InvestmentsControl> = vec![];
         for investment in results {
-            investments_result.push(InvestmentsControl::make_investments_control(conn, investment).await);
+            investments_result
+                .push(InvestmentsControl::make_investments_control(conn, investment).await);
         }
 
         Ok(investments_result)
     }
 
-    pub async fn get_investment_by_id(conn: &DBConnection, id_for_lookup: i32) -> Result<InvestmentsControl> {
+    pub async fn get_investment_by_id(
+        conn: &DBConnection,
+        id_for_lookup: i32,
+    ) -> Result<InvestmentsControl> {
         use crate::schema::investments::dsl::*;
 
         let investment = conn
-            .run(move |sql_conn| -> Result<Investments> {
-                let result: Investments = investments
-                    .filter(id.eq(id_for_lookup))
-                    .first(sql_conn)
-                    .map_err(|_| ServerError::InvalidValue(vec!["Id".to_string()]))?;
+            .run(move |sql_conn| -> Result<Investment> {
+                let result: Investment =
+                    investments
+                        .filter(id.eq(id_for_lookup))
+                        .first(sql_conn)
+                        .map_err(|_| ServerError::InvalidValue(vec!["Id".to_string()]))?;
                 Ok(result)
             })
             .await?;
@@ -103,7 +110,7 @@ impl InvestmentsControl {
         conn.run(move |sql_connection| -> Result<()> {
             diesel::insert_into(investments)
                 .values(&investment)
-                .get_result::<Investments>(sql_connection)
+                .get_result::<Investment>(sql_connection)
                 .map_err(|err| match err {
                     DieselError::DatabaseError(_, info) => {
                         ServerError::InvalidForeignKey(info.message().to_string())
@@ -115,7 +122,11 @@ impl InvestmentsControl {
         .await
     }
 
-    pub async fn update_investment(conn: &DBConnection, id_for_update: i32, investment: NewInvestment) -> Result<()> {
+    pub async fn update_investment(
+        conn: &DBConnection,
+        id_for_update: i32,
+        investment: NewInvestment,
+    ) -> Result<()> {
         use crate::schema::investments::dsl::*;
 
         conn.run(move |sql_connection| -> Result<()> {
@@ -126,7 +137,7 @@ impl InvestmentsControl {
                     share.eq(investment.share),
                     invested.eq(investment.invested),
                 ))
-                .get_result::<Investments>(sql_connection)
+                .get_result::<Investment>(sql_connection)
                 .map_err(|err| match err {
                     DieselError::DatabaseError(_, info) => {
                         ServerError::InvalidForeignKey(info.message().to_string())
@@ -144,7 +155,7 @@ impl InvestmentsControl {
         conn.run(move |sql_conn| -> Result<()> {
             diesel::delete(investments)
                 .filter(&id.eq(id_for_delete))
-                .get_result::<Investments>(sql_conn)
+                .get_result::<Investment>(sql_conn)
                 .map_err(|_| ServerError::InvalidValue(vec!["Id".to_string()]))?;
             Ok(())
         })

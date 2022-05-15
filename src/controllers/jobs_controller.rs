@@ -49,7 +49,7 @@ impl NewJob {
         })
     }
 }
-#[derive(Serialize)]
+#[derive(Serialize, Debug)]
 pub struct JobsControl {
     pub id: i32,
     pub game: String,
@@ -63,7 +63,7 @@ pub struct JobsControl {
 }
 
 impl JobsControl {
-    pub async fn make_jobs_control(conn: &DBConnection, jobs_struct: Jobs) -> Self {
+    pub async fn make_jobs_control(conn: &DBConnection, jobs_struct: Job) -> Self {
         let first_work_day = jobs_struct.first_work_day;
         let last_work_day = jobs_struct.last_work_day;
 
@@ -77,7 +77,11 @@ impl JobsControl {
             .name;
 
         let first_work_day = first_work_day.format("%d-%m-%Y").to_string();
-        let last_work_day = if last_work_day.is_some() {last_work_day.unwrap().format("%d-%m-%Y").to_string()} else {"".to_string()};
+        let last_work_day = if last_work_day.is_some() {
+            last_work_day.unwrap().format("%d-%m-%Y").to_string()
+        } else {
+            "".to_string()
+        };
         JobsControl {
             id: jobs_struct.id,
             game: game,
@@ -106,8 +110,8 @@ impl JobsControl {
         use crate::schema::jobs::dsl::*;
 
         let results = conn
-            .run(move |sql_conn| -> Result<Vec<Jobs>> {
-                Ok(jobs.order(id.asc()).load::<Jobs>(sql_conn)?)
+            .run(move |sql_conn| -> Result<Vec<Job>> {
+                Ok(jobs.order(id.asc()).load::<Job>(sql_conn)?)
             })
             .await?;
 
@@ -123,8 +127,8 @@ impl JobsControl {
         use crate::schema::jobs::dsl::*;
 
         let job = conn
-            .run(move |sql_conn| -> Result<Jobs> {
-                let result: Jobs = jobs
+            .run(move |sql_conn| -> Result<Job> {
+                let result: Job = jobs
                     .filter(id.eq(id_for_lookup))
                     .first(sql_conn)
                     .map_err(|_| ServerError::InvalidValue(vec!["Id".to_string()]))?;
@@ -141,7 +145,7 @@ impl JobsControl {
         conn.run(move |sql_connection| -> Result<()> {
             diesel::insert_into(jobs)
                 .values(&job)
-                .get_result::<Jobs>(sql_connection)
+                .get_result::<Job>(sql_connection)
                 .map_err(|err| match err {
                     DieselError::DatabaseError(_, info) => {
                         ServerError::InvalidForeignKey(info.message().to_string())
@@ -166,7 +170,7 @@ impl JobsControl {
                     last_work_day.eq(job.last_work_day),
                     salary.eq(job.salary),
                 ))
-                .get_result::<Jobs>(sql_connection)
+                .get_result::<Job>(sql_connection)
                 .map_err(|err| match err {
                     DieselError::DatabaseError(_, info) => {
                         ServerError::InvalidForeignKey(info.message().to_string())
@@ -184,7 +188,7 @@ impl JobsControl {
         conn.run(move |sql_conn| -> Result<()> {
             diesel::delete(jobs)
                 .filter(&id.eq(id_for_delete))
-                .get_result::<Jobs>(sql_conn)
+                .get_result::<Job>(sql_conn)
                 .map_err(|_| ServerError::InvalidValue(vec!["Id".to_string()]))?;
             Ok(())
         })

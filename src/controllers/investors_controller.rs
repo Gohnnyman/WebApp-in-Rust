@@ -30,8 +30,8 @@ pub struct InvestorsControl {
     pub is_company: bool,
 }
 
-impl std::convert::From<Investors> for InvestorsControl {
-    fn from(investors_struct: Investors) -> Self {
+impl std::convert::From<Investor> for InvestorsControl {
+    fn from(investors_struct: Investor) -> Self {
         InvestorsControl {
             id: investors_struct.id,
             name: investors_struct.name,
@@ -45,8 +45,8 @@ impl InvestorsControl {
         use crate::schema::investors::dsl::*;
 
         let results = conn
-            .run(move |sql_conn| -> Result<Vec<Investors>> {
-                Ok(investors.order(id.asc()).load::<Investors>(sql_conn)?)
+            .run(move |sql_conn| -> Result<Vec<Investor>> {
+                Ok(investors.order(id.asc()).load::<Investor>(sql_conn)?)
             })
             .await?;
 
@@ -60,7 +60,7 @@ impl InvestorsControl {
         use crate::schema::investors::dsl::*;
 
         conn.run(move |sql_conn| -> Result<InvestorsControl> {
-            let result: Investors = investors
+            let result: Investor = investors
                 .filter(id.eq(id_for_lookup))
                 .first(sql_conn)
                 .map_err(|_| ServerError::InvalidValue(vec!["Id".to_string()]))?;
@@ -75,7 +75,7 @@ impl InvestorsControl {
         conn.run(move |sql_connection| -> Result<()> {
             diesel::insert_into(investors)
                 .values(&investor)
-                .get_result::<Investors>(sql_connection)
+                .get_result::<Investor>(sql_connection)
                 .map_err(|err| match err {
                     DieselError::DatabaseError(_, info) => {
                         ServerError::InvalidForeignKey(info.message().to_string())
@@ -97,7 +97,7 @@ impl InvestorsControl {
         conn.run(move |sql_connection| -> Result<()> {
             diesel::update(investors.filter(&id.eq(id_for_update)))
                 .set((name.eq(investor.name), is_company.eq(investor.is_company)))
-                .get_result::<Investors>(sql_connection)
+                .get_result::<Investor>(sql_connection)
                 .map_err(|err| match err {
                     DieselError::DatabaseError(_, info) => {
                         ServerError::InvalidForeignKey(info.message().to_string())
@@ -115,7 +115,7 @@ impl InvestorsControl {
         conn.run(move |sql_conn| -> Result<()> {
             diesel::delete(investors)
                 .filter(&id.eq(id_for_delete))
-                .get_result::<Investors>(sql_conn)
+                .get_result::<Investor>(sql_conn)
                 .map_err(|_| ServerError::InvalidValue(vec!["Id".to_string()]))?;
             Ok(())
         })

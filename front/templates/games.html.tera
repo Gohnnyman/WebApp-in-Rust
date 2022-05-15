@@ -1,6 +1,12 @@
 {% extends "base" %}
 
 {% block content %}
+    {% if content[0] | length > 0 %}
+        {% set_global stat = true %}
+        {% set_global jobs =  content[0][0][1] %}
+        {% set_global donations =  content[0][0][2] %}
+        {% set_global investments = content[0][0][3] %}
+    {% endif %}
     <h3> {{ table }} </h3>
     <table>
         <th> Id </th>    
@@ -8,22 +14,84 @@
         <th> Жанр </th>    
         <th> Дата виходу </th>     
         <th> Ціна розробки </th>    
+        <th> Видавництво </th>    
         <th> Ціна </th>    
         <th> По підписці </th>    
         <th> </th>
+        <th> </th>
         {% for game in values %}
-            <tr>
+            <tr 
+            {% if stat and game.id == content[0][0][0] %} 
+            style="background-color: #f82c2cc4" 
+            {% endif %} 
+            >
                 <td> {{game.id}} </td>
                 <td> {{game.name}} </td>
                 <td> {{game.genre}} </td>
                 <td> {{game.release_date}} </td>
                 <td> {{game.prime_cost}} &#8372; </td>
+                <td> {{game.publisher}} </td>
                 <td> {{game.cost}} &#8372; </td>
                 <td> {% if game.is_subscribable %} [X] {% else %} [] {% endif %} </td>
+                <td> <a href="/games?id={{ game.id }}" class="button"> Інфо </a> </td>
                 <td> <a href="/games/edit?id={{ game.id }}" class="button"> Змінити </a> </td>
             </tr>
         {% endfor %}
     </table>
-
     <a href="/games/add" class="button" style="margin-top: 30px"> Додати </a>
+
+
+    {% if stat %}
+        <br> <br>
+        <h4>Працівники, що працювали над грою: </h4> 
+        <table style="width: 50%"> 
+            <th> Ім'я </th>
+            <th> Позиція </th>
+            <th> Перший день  </th>
+            <th> Останній день </th>
+            <th> Зарплатня </th>
+
+            {% for job in jobs %}
+                <tr>
+                    <td> {{job.staff}} </td>
+                    <td> {{job.position}} </td>
+                    <td> {{job.first_work_day}} </td>
+                    <td> {{job.last_work_day}} </td>
+                    <td> {{job.salary}} &#8372;</td>
+                </tr>
+            {% endfor %}
+        </table>
+
+        <br> <br>
+        <h4> Донати, що надходили у гру: </h4> 
+        <table style="width: 50%"> 
+            <th> Ім'я донатера </th>
+            <th> Калькіть </th>
+            <th> Час  </th>
+
+            {% for donation in donations %}
+                <tr>
+                    <td> {{donation.user}} </td>
+                    <td> {{donation.amount}} &#8372;</td>
+                    <td> {{donation.donation_time}} </td>
+                </tr>
+            {% endfor %}
+        </table>
+
+        <br> <br>
+        <h4> Інвестування у гру: </h4> 
+        <table style="width: 50%"> 
+            <th> Ім'я Інвестора </th>
+            <th> Його відсоток </th>
+            <th> Інвестовано  </th>
+
+            {% for investment in investments %}
+                <tr>
+                    <td> {{investment.investor}} </td>
+                    <td> {{investment.share}} % </td>
+                    <td> {{investment.invested}} &#8372;</td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
 {% endblock content %}

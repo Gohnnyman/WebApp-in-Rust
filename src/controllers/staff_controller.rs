@@ -35,7 +35,7 @@ impl NewStaff {
         })
     }
 }
-#[derive(Serialize)]
+#[derive(Serialize, Debug)]
 pub struct StaffControl {
     pub id: i32,
     pub name: String,

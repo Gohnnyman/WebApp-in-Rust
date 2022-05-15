@@ -37,7 +37,7 @@ impl NewDonation {
         })
     }
 }
-#[derive(Serialize)]
+#[derive(Serialize, Debug)]
 pub struct DonationsControl {
     pub id: i32,
     pub user: String,
@@ -49,7 +49,7 @@ pub struct DonationsControl {
 }
 
 impl DonationsControl {
-    pub async fn make_donations_control(conn: &DBConnection, donations_struct: Donations) -> Self {
+    pub async fn make_donations_control(conn: &DBConnection, donations_struct: Donation) -> Self {
         let donation_time = donations_struct.donation_time;
 
         let game = GamesControl::get_game_by_id(conn, donations_struct.game_id)
@@ -83,8 +83,8 @@ impl DonationsControl {
         use crate::schema::donations::dsl::*;
 
         let results = conn
-            .run(move |sql_conn| -> Result<Vec<Donations>> {
-                Ok(donations.order(id.asc()).load::<Donations>(sql_conn)?)
+            .run(move |sql_conn| -> Result<Vec<Donation>> {
+                Ok(donations.order(id.asc()).load::<Donation>(sql_conn)?)
             })
             .await?;
 
@@ -103,8 +103,8 @@ impl DonationsControl {
         use crate::schema::donations::dsl::*;
 
         let donation = conn
-            .run(move |sql_conn| -> Result<Donations> {
-                let result: Donations = donations
+            .run(move |sql_conn| -> Result<Donation> {
+                let result: Donation = donations
                     .filter(id.eq(id_for_lookup))
                     .first(sql_conn)
                     .map_err(|_| ServerError::InvalidValue(vec!["Id".to_string()]))?;
@@ -121,7 +121,7 @@ impl DonationsControl {
         conn.run(move |sql_connection| -> Result<()> {
             diesel::insert_into(donations)
                 .values(&donation)
-                .get_result::<Donations>(sql_connection)
+                .get_result::<Donation>(sql_connection)
                 .map_err(|err| match err {
                     DieselError::DatabaseError(_, info) => {
                         ServerError::InvalidForeignKey(info.message().to_string())
@@ -148,7 +148,7 @@ impl DonationsControl {
                     amount.eq(donation.amount),
                     donation_time.eq(donation.donation_time),
                 ))
-                .get_result::<Donations>(sql_connection)
+                .get_result::<Donation>(sql_connection)
                 .map_err(|err| match err {
                     DieselError::DatabaseError(_, info) => {
                         ServerError::InvalidForeignKey(info.message().to_string())
@@ -166,7 +166,7 @@ impl DonationsControl {
         conn.run(move |sql_conn| -> Result<()> {
             diesel::delete(donations)
                 .filter(&id.eq(id_for_delete))
-                .get_result::<Donations>(sql_conn)
+                .get_result::<Donation>(sql_conn)
                 .map_err(|_| ServerError::InvalidValue(vec!["Id".to_string()]))?;
             Ok(())
         })
