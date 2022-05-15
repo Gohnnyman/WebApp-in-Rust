@@ -465,13 +465,19 @@ pub async fn publishers_delete_post<'r>(conn: DBConnection, id: i32) -> Result<R
     Ok(Redirect::to(uri!(publishers(None::<i32>))))
 }
 
-#[get("/investors")]
-pub async fn investors(conn: DBConnection) -> Template {
-    let ctx = CustomContext::<_, String> {
+#[get("/investors?<id>")]
+pub async fn investors(conn: DBConnection, id: Option<i32>) -> Template {
+    let mut content = Vec::new();
+    if id.is_some() {
+        let stat = InvestorsControl::get_statistic(&conn, id.unwrap()).await;
+        content.push(stat);
+    }
+
+    let ctx = CustomContext {
         values: InvestorsControl::get_investors(&conn).await.unwrap(),
         table: "Investors",
         errors: vec![],
-        content: vec![],
+        content: vec![content],
     };
 
     Template::render("investors", ctx)
@@ -536,7 +542,7 @@ pub async fn investors_add_post<'r>(
         };
         Err(Template::render("investors_add", ctx))
     } else {
-        Ok(Redirect::to(uri!(investors)))
+        Ok(Redirect::to(uri!(investors(None::<i32>))))
     }
 }
 
@@ -606,7 +612,7 @@ pub async fn investors_edit_post<'r>(
         };
         Err(Template::render("investors_edit", ctx))
     } else {
-        Ok(Redirect::to(uri!(investors)))
+        Ok(Redirect::to(uri!(investors(None::<i32>))))
     }
 }
 
@@ -614,7 +620,7 @@ pub async fn investors_edit_post<'r>(
 pub async fn investors_delete_post<'r>(conn: DBConnection, id: i32) -> Result<Redirect, Template> {
     InvestorsControl::delete_investor(&conn, id).await.unwrap();
 
-    Ok(Redirect::to(uri!(investors)))
+    Ok(Redirect::to(uri!(investors(None::<i32>))))
 }
 
 #[get("/staff")]

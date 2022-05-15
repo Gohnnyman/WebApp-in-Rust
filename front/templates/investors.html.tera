@@ -1,21 +1,45 @@
 {% extends "base" %}
 
 {% block content %}
+    {% if content[0] | length > 0 %}
+        {% set_global stat = true %}
+        {% set_global investments =  content[0][0][1] %}
+    {% endif %}
     <h3> {{ table }} </h3>
     <table>
         <th> Id </th>    
         <th> Ім'я </th>    
         <th> Є компанією: </th>     
         <th> </th>
+        <th> </th>
         {% for investor in values %}
             <tr>
                 <td> {{investor.id}} </td>
                 <td> {{investor.name}} </td>
                 <td> {% if investor.is_company %} [X] {% else %} [] {% endif %} </td>
+                <td> <a href="/investors?id={{ investor.id }}" class="button"> Інфо </a> </td>
                 <td> <a href="/investors/edit?id={{ investor.id }}" class="button"> Змінити </a> </td>
             </tr>
         {% endfor %}
     </table>
 
     <a href="/investors/add" class="button" style="margin-top: 30px"> Додати </a>
+
+    {% if stat %}
+        <br> <br>
+        <h4> Ігри, в які інвестував інвестор </h4> 
+        <table style="width: 50%"> 
+            <th> Гра </th>
+            <th> Відсоток </th>
+            <th> Інвестовано </th>
+
+            {% for investment in investments %}
+                <tr>
+                    <td> {{investment.game}} </td>
+                    <td> {{investment.share}} % </td>
+                    <td> {{investment.invested}} &#8372;</td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
 {% endblock content %}

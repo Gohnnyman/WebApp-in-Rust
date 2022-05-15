@@ -6,7 +6,7 @@
         <label for="name">Ім'я:</label>
         <input type="text" id="name" name="add.name"><br>
 
-        <label for="is_company"> По підписці:</label>
+        <label for="is_company"> Є компанією:</label>
         <input type="checkbox" id="is_company" name="add.is_company"><br>
         
         <input type="submit" value="Додати" name="submit_button">

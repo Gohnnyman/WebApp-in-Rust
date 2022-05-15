@@ -1,3 +1,4 @@
+use crate::controllers::*;
 use crate::errors::ServerError;
 use crate::models::*;
 use crate::requests_handler::AddInvestor;
@@ -23,7 +24,7 @@ impl NewInvestor {
         })
     }
 }
-#[derive(Serialize)]
+#[derive(Serialize, Debug)]
 pub struct InvestorsControl {
     pub id: i32,
     pub name: String,
@@ -41,6 +42,38 @@ impl std::convert::From<Investor> for InvestorsControl {
 }
 
 impl InvestorsControl {
+    pub async fn get_statistic(
+        conn: &DBConnection,
+        id_for_lookup: i32,
+    ) -> (i32, Vec<InvestmentsControl>) {
+        (
+            id_for_lookup,
+            InvestorsControl::get_games(conn, id_for_lookup).await,
+        )
+    }
+
+    pub async fn get_games(conn: &DBConnection, id_for_lookup: i32) -> Vec<InvestmentsControl> {
+        use crate::schema::investments;
+        use crate::schema::investors::dsl::*;
+
+        let table = conn
+            .run(move |sql_conn| -> Vec<(Investor, Investment)> {
+                investors
+                    .filter(id.eq(id_for_lookup))
+                    .inner_join(investments::table)
+                    .load(sql_conn)
+                    .unwrap()
+            })
+            .await;
+
+        let mut vec = Vec::new();
+        for (_, investment) in table {
+            vec.push(InvestmentsControl::make_investments_control(conn, investment).await);
+        }
+
+        vec
+    }
+
     pub async fn get_investors(conn: &DBConnection) -> Result<Vec<InvestorsControl>> {
         use crate::schema::investors::dsl::*;
 
