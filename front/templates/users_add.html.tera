@@ -6,7 +6,7 @@
         <label for="nickname">Нікейм</label>
         <input type="text" id="nickname" name="add.nickname"><br>
 
-        <label for="registration_date"> Дата виходу:</label>
+        <label for="registration_date"> Дата реєстрації:</label>
         <input type="date" id="registration_date" name="add.registration_date"><br>
         
         <input type="submit" value="Додати" name="submit_button">

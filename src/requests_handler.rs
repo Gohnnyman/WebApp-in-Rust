@@ -776,13 +776,18 @@ pub async fn staff_delete_post<'r>(conn: DBConnection, id: i32) -> Result<Redire
     Ok(Redirect::to(uri!(staff(None::<i32>))))
 }
 
-#[get("/users")]
-pub async fn users(conn: DBConnection) -> Template {
-    let ctx = CustomContext::<_, String> {
+#[get("/users?<id>")]
+pub async fn users(conn: DBConnection, id: Option<i32>) -> Template {
+    let mut content = Vec::new();
+    if id.is_some() {
+        let stat = UsersControl::get_statistic(&conn, id.unwrap()).await;
+        content.push(stat);
+    }
+    let ctx = CustomContext {
         values: UsersControl::get_users(&conn).await.unwrap(),
         table: "Users",
         errors: vec![],
-        content: vec![],
+        content: vec![content],
     };
 
     Template::render("users", ctx)
@@ -845,7 +850,7 @@ pub async fn users_add_post<'r>(
         };
         Err(Template::render("users_add", ctx))
     } else {
-        Ok(Redirect::to(uri!(users)))
+        Ok(Redirect::to(uri!(users(None::<i32>))))
     }
 }
 
@@ -915,7 +920,7 @@ pub async fn users_edit_post<'r>(
         };
         Err(Template::render("users_edit", ctx))
     } else {
-        Ok(Redirect::to(uri!(users)))
+        Ok(Redirect::to(uri!(users(None::<i32>))))
     }
 }
 
@@ -923,7 +928,7 @@ pub async fn users_edit_post<'r>(
 pub async fn users_delete_post<'r>(conn: DBConnection, id: i32) -> Result<Redirect, Template> {
     UsersControl::delete_users(&conn, id).await.unwrap();
 
-    Ok(Redirect::to(uri!(users)))
+    Ok(Redirect::to(uri!(users(None::<i32>))))
 }
 
 #[get("/donations")]

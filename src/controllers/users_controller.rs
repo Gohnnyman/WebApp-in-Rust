@@ -1,5 +1,6 @@
 use crate::errors::ServerError;
 use crate::models::*;
+use crate::controllers::*;
 use crate::requests_handler::AddUser;
 use crate::schema::users;
 use crate::DBConnection;
@@ -60,6 +61,35 @@ impl std::convert::From<User> for UsersControl {
 }
 
 impl UsersControl {
+    pub async fn get_statistic(conn: &DBConnection, id_for_lookup: i32) -> (i32, Vec<DonationsControl>) {
+        (
+            id_for_lookup,
+            UsersControl::get_donations(conn, id_for_lookup).await,
+        )
+    }
+
+    pub async fn get_donations(conn: &DBConnection, id_for_lookup: i32) -> Vec<DonationsControl> {
+        use crate::schema::donations;
+        use crate::schema::users::dsl::*;
+
+        let table = conn
+            .run(move |sql_conn| -> Vec<(User, Donation)> {
+                users
+                    .filter(id.eq(id_for_lookup))
+                    .inner_join(donations::table)
+                    .load(sql_conn)
+                    .unwrap()
+            })
+            .await;
+
+        let mut vec = Vec::new();
+        for (_, donation) in table {
+            vec.push(DonationsControl::make_donations_control(conn, donation).await);
+        }
+
+        vec
+    }
+
     pub fn change_date_format(&mut self, from: &str, to: &str) -> Result<()> {
         let registration_date = NaiveDate::parse_from_str(&self.registration_date, from)?;
         self.registration_date = registration_date.format(to).to_string();
