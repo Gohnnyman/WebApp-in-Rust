@@ -1,3 +1,4 @@
+use crate::controllers::*;
 use crate::errors::ServerError;
 use crate::models::*;
 use crate::requests_handler::AddStaff;
@@ -56,6 +57,34 @@ impl std::convert::From<Staff> for StaffControl {
 }
 
 impl StaffControl {
+    pub async fn get_statistic(conn: &DBConnection, id_for_lookup: i32) -> (i32, Vec<JobsControl>) {
+        (
+            id_for_lookup,
+            StaffControl::get_jobs(conn, id_for_lookup).await,
+        )
+    }
+
+    pub async fn get_jobs(conn: &DBConnection, id_for_lookup: i32) -> Vec<JobsControl> {
+        use crate::schema::jobs;
+        use crate::schema::staff::dsl::*;
+
+        let table = conn
+            .run(move |sql_conn| -> Vec<(Staff, Job)> {
+                staff
+                    .filter(id.eq(id_for_lookup))
+                    .inner_join(jobs::table)
+                    .load(sql_conn)
+                    .unwrap()
+            })
+            .await;
+
+        let mut vec = Vec::new();
+        for (_, job) in table {
+            vec.push(JobsControl::make_jobs_control(conn, job).await);
+        }
+
+        vec
+    }
     pub fn change_date_format(&mut self, from: &str, to: &str) -> Result<()> {
         let birth = NaiveDate::parse_from_str(&self.birth, from)?;
         self.birth = birth.format(to).to_string();

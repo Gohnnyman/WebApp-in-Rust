@@ -48,11 +48,14 @@ impl InvestorsControl {
     ) -> (i32, Vec<InvestmentsControl>) {
         (
             id_for_lookup,
-            InvestorsControl::get_games(conn, id_for_lookup).await,
+            InvestorsControl::get_investments(conn, id_for_lookup).await,
         )
     }
 
-    pub async fn get_games(conn: &DBConnection, id_for_lookup: i32) -> Vec<InvestmentsControl> {
+    pub async fn get_investments(
+        conn: &DBConnection,
+        id_for_lookup: i32,
+    ) -> Vec<InvestmentsControl> {
         use crate::schema::investments;
         use crate::schema::investors::dsl::*;
 

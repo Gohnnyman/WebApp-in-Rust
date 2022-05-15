@@ -623,13 +623,18 @@ pub async fn investors_delete_post<'r>(conn: DBConnection, id: i32) -> Result<Re
     Ok(Redirect::to(uri!(investors(None::<i32>))))
 }
 
-#[get("/staff")]
-pub async fn staff(conn: DBConnection) -> Template {
-    let ctx = CustomContext::<_, String> {
+#[get("/staff?<id>")]
+pub async fn staff(conn: DBConnection, id: Option<i32>) -> Template {
+    let mut content = Vec::new();
+    if id.is_some() {
+        let stat = StaffControl::get_statistic(&conn, id.unwrap()).await;
+        content.push(stat);
+    }
+    let ctx = CustomContext {
         values: StaffControl::get_staff(&conn).await.unwrap(),
         table: "Staff",
         errors: vec![],
-        content: vec![],
+        content: vec![content],
     };
 
     Template::render("staff", ctx)
@@ -691,7 +696,7 @@ pub async fn staff_add_post<'r>(
         };
         Err(Template::render("staff_add", ctx))
     } else {
-        Ok(Redirect::to(uri!(staff)))
+        Ok(Redirect::to(uri!(staff(None::<i32>))))
     }
 }
 
@@ -760,7 +765,7 @@ pub async fn staff_edit_post<'r>(
         };
         Err(Template::render("staff_edit", ctx))
     } else {
-        Ok(Redirect::to(uri!(staff)))
+        Ok(Redirect::to(uri!(staff(None::<i32>))))
     }
 }
 
@@ -768,7 +773,7 @@ pub async fn staff_edit_post<'r>(
 pub async fn staff_delete_post<'r>(conn: DBConnection, id: i32) -> Result<Redirect, Template> {
     StaffControl::delete_staff(&conn, id).await.unwrap();
 
-    Ok(Redirect::to(uri!(staff)))
+    Ok(Redirect::to(uri!(staff(None::<i32>))))
 }
 
 #[get("/users")]

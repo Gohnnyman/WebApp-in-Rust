@@ -1,21 +1,53 @@
 {% extends "base" %}
 
 {% block content %}
+    {% if content[0] | length > 0 %}
+        {% set_global stat = true %}
+        {% set_global jobs =  content[0][0][1] %}
+    {% endif %}
     <h3> {{ table }} </h3>
     <table>
         <th> Id </th>    
         <th> Ім'я </th>    
         <th> Дата народження </th>     
         <th> </th>
+        <th> </th>
         {% for staff in values %}
-            <tr>
+            <tr
+            {% if stat and staff.id == content[0][0][0] %} 
+            style="background-color: #f82c2cc4" 
+            {% endif %} 
+            >
                 <td> {{staff.id}} </td>
                 <td> {{staff.name}} </td>
                 <td> {{staff.birth}} </td>
+                <td> <a href="/staff?id={{ staff.id }}" class="button"> Інфо </a> </td>
                 <td> <a href="/staff/edit?id={{ staff.id }}" class="button"> Змінити </a> </td>
             </tr>
         {% endfor %}
     </table>
 
     <a href="/staff/add" class="button" style="margin-top: 30px"> Додати </a>
+
+    {% if stat %}
+        <br> <br>
+        <h4> Проекти, над якими працював робітник: </h4> 
+        <table style="width: 50%"> 
+            <th> Гра </th>
+            <th> Позиція </th>
+            <th> Перший день  </th>
+            <th> Останній день </th>
+            <th> Зарплатня </th>
+
+            {% for job in jobs %}
+                <tr>
+                    <td> {{job.game}} </td>
+                    <td> {{job.position}} </td>
+                    <td> {{job.first_work_day}} </td>
+                    <td> {{job.last_work_day}} </td>
+                    <td> {{job.salary}} &#8372;</td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
 {% endblock content %}

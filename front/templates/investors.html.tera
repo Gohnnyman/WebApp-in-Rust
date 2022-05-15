@@ -13,7 +13,11 @@
         <th> </th>
         <th> </th>
         {% for investor in values %}
-            <tr>
+            <tr
+            {% if stat and investor.id == content[0][0][0] %} 
+            style="background-color: #f82c2cc4" 
+            {% endif %} 
+            >
                 <td> {{investor.id}} </td>
                 <td> {{investor.name}} </td>
                 <td> {% if investor.is_company %} [X] {% else %} [] {% endif %} </td>
