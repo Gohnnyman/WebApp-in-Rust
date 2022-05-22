@@ -6,6 +6,8 @@
         {% set_global jobs =  content[0][0][1] %}
         {% set_global donations =  content[0][0][2] %}
         {% set_global investments = content[0][0][3] %}
+        {% set_global total_donations = content[0][0][4] %}
+        {% set_global total_amount_of_donations = content[0][0][5] %}
     {% endif %}
     <h3> {{ table }} </h3>
     <table>
@@ -58,6 +60,25 @@
                     <td> {{job.salary}} &#8372;</td>
                 </tr>
             {% endfor %}
+        </table>
+
+
+        <br> <br>
+        <h4> Усього донатів: </h4> 
+        <table style="width: 50%"> 
+            <th> Ім'я донатера </th>
+            <th> Калькіть </th>
+
+            {% for donation in total_donations %}
+                <tr>
+                    <td> {{donation.user}} </td>
+                    <td> {{donation.amount}} &#8372;</td>
+                </tr>
+            {% endfor %}
+                <tr> 
+                    <td> <b> Усього: </b> </td>
+                    <td> <b> {{total_amount_of_donations}} &#8372; </b></td>
+                </tr>
         </table>
 
         <br> <br>

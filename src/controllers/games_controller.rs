@@ -6,6 +6,7 @@ use crate::schema::games;
 use crate::DBConnection;
 use anyhow::Result;
 use chrono::{Datelike, NaiveDate};
+use diesel::dsl::sql;
 use diesel::pg::data_types::{PgDate, PgMoney};
 use diesel::prelude::*;
 use diesel::result::Error as DieselError;
@@ -21,6 +22,11 @@ pub struct NewGame {
     pub publisher_id: i32,
     pub cost: PgMoney,
     pub is_subscribable: bool,
+}
+#[derive(Serialize, Debug)]
+pub struct TotalDonations {
+    user: String,
+    amount: f64,
 }
 
 impl NewGame {
@@ -68,13 +74,60 @@ impl GamesControl {
         Vec<JobsControl>,
         Vec<DonationsControl>,
         Vec<InvestmentsControl>,
+        Vec<TotalDonations>,
+        f64,
     ) {
+        let (total_donations, sum) = GamesControl::get_total_donations(conn, id_for_lookup).await;
         (
             id_for_lookup,
             GamesControl::get_game_staff(conn, id_for_lookup).await,
             GamesControl::get_donations(conn, id_for_lookup).await,
             GamesControl::get_investments(conn, id_for_lookup).await,
+            total_donations,
+            sum,
         )
+    }
+
+    pub async fn get_total_donations(
+        conn: &DBConnection,
+        id_for_lookup: i32,
+    ) -> (Vec<TotalDonations>, f64) {
+        use crate::schema::donations::dsl::*;
+        use crate::schema::users;
+
+        #[derive(Queryable)]
+        struct Tmp {
+            user: String,
+            amount: PgMoney,
+        }
+
+        let table = conn
+            .run(move |sql_conn| -> Vec<Tmp> {
+                donations
+                    .select((
+                        sql::<diesel::types::VarChar>("nickname as nickname"),
+                        sql::<diesel::sql_types::Money>("sum(amount) AS sum"),
+                    ))
+                    .group_by(users::nickname)
+                    .inner_join(games::table)
+                    .inner_join(users::table)
+                    .filter(games::id.eq(id_for_lookup))
+                    .load(sql_conn)
+                    .unwrap()
+            })
+            .await;
+
+        let result: Vec<TotalDonations> = table
+            .iter()
+            .map(|query_result| TotalDonations {
+                user: query_result.user.clone(),
+                amount: query_result.amount.0 as f64 / 100f64,
+            })
+            .collect();
+
+        let total_amount = result.iter().map(|res| res.amount).sum();
+
+        (result, total_amount)
     }
 
     pub async fn get_investments(

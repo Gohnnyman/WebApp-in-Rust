@@ -1,6 +1,6 @@
+use crate::controllers::*;
 use crate::errors::ServerError;
 use crate::models::*;
-use crate::controllers::*;
 use crate::requests_handler::AddUser;
 use crate::schema::users;
 use crate::DBConnection;
@@ -61,7 +61,10 @@ impl std::convert::From<User> for UsersControl {
 }
 
 impl UsersControl {
-    pub async fn get_statistic(conn: &DBConnection, id_for_lookup: i32) -> (i32, Vec<DonationsControl>) {
+    pub async fn get_statistic(
+        conn: &DBConnection,
+        id_for_lookup: i32,
+    ) -> (i32, Vec<DonationsControl>) {
         (
             id_for_lookup,
             UsersControl::get_donations(conn, id_for_lookup).await,
