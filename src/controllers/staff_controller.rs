@@ -85,6 +85,7 @@ impl StaffControl {
 
         vec
     }
+
     pub fn change_date_format(&mut self, from: &str, to: &str) -> Result<()> {
         let birth = NaiveDate::parse_from_str(&self.birth, from)?;
         self.birth = birth.format(to).to_string();

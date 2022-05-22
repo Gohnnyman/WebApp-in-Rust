@@ -139,7 +139,7 @@ pub async fn games(conn: DBConnection, id: Option<i32>) -> Template {
 
     let ctx = CustomContext {
         values: GamesControl::get_games(&conn).await.unwrap(),
-        table: "Games",
+        table: "Ігри",
         errors: vec![],
         content: vec![content],
     };
@@ -162,7 +162,7 @@ pub async fn games_add(conn: DBConnection) -> Template {
 
     let ctx = CustomContext::<String, String> {
         values: vec![],
-        table: "Games",
+        table: "Ігри",
         errors: vec![],
         content: vec![publishers_id, publishers_name],
     };
@@ -208,7 +208,7 @@ pub async fn games_add_post<'r>(
     if !errs.is_empty() {
         let ctx = CustomContext::<String, String> {
             values: vec![],
-            table: "Games",
+            table: "Ігри",
             errors: errs,
             content: vec![],
         };
@@ -235,7 +235,7 @@ pub async fn games_edit<'r>(conn: DBConnection, id: i32) -> Template {
 
     let ctx = CustomContext::<_, String> {
         values: vec![game],
-        table: "Games",
+        table: "Ігри",
         errors: vec![],
         content: vec![publishers_id, publishers_name],
     };
@@ -287,7 +287,7 @@ pub async fn games_edit_post<'r>(
         game.change_date_format("%d-%m-%Y", "%Y-%m-%d").unwrap();
         let ctx = CustomContext::<_, String> {
             values: vec![game],
-            table: "Games",
+            table: "Ігри",
             errors: errs,
             content: vec![],
         };
@@ -313,7 +313,7 @@ pub async fn publishers(conn: DBConnection, id: Option<i32>) -> Template {
     }
     let ctx = CustomContext {
         values: PublishersControl::get_publishers(&conn).await.unwrap(),
-        table: "Publishers",
+        table: "Видавництва",
         errors: vec![],
         content: vec![content],
     };
@@ -325,7 +325,7 @@ pub async fn publishers(conn: DBConnection, id: Option<i32>) -> Template {
 pub async fn publishers_add() -> Template {
     let ctx = CustomContext::<String, String> {
         values: vec![],
-        table: "Publishers",
+        table: "Видавництва",
         errors: vec![],
         content: vec![],
     };
@@ -374,7 +374,7 @@ pub async fn publishers_add_post<'r>(
     if !errs.is_empty() {
         let ctx = CustomContext::<String, String> {
             values: vec![],
-            table: "Publishers",
+            table: "Видавництва",
             errors: errs,
             content: vec![],
         };
@@ -392,7 +392,7 @@ pub async fn publishers_edit<'r>(conn: DBConnection, id: i32) -> Template {
 
     let ctx = CustomContext::<_, String> {
         values: vec![publisher],
-        table: "Publishers",
+        table: "Видавництва",
         errors: vec![],
         content: vec![],
     };
@@ -446,7 +446,7 @@ pub async fn publishers_edit_post<'r>(
             .unwrap();
         let ctx = CustomContext::<_, String> {
             values: vec![publisher],
-            table: "Publishers",
+            table: "Видавництва",
             errors: errs,
             content: vec![],
         };
@@ -475,7 +475,7 @@ pub async fn investors(conn: DBConnection, id: Option<i32>) -> Template {
 
     let ctx = CustomContext {
         values: InvestorsControl::get_investors(&conn).await.unwrap(),
-        table: "Investors",
+        table: "Інвестори",
         errors: vec![],
         content: vec![content],
     };
@@ -487,7 +487,7 @@ pub async fn investors(conn: DBConnection, id: Option<i32>) -> Template {
 pub async fn investors_add() -> Template {
     let ctx = CustomContext::<String, String> {
         values: vec![],
-        table: "Investors",
+        table: "Інвестори",
         errors: vec![],
         content: vec![],
     };
@@ -536,7 +536,7 @@ pub async fn investors_add_post<'r>(
     if !errs.is_empty() {
         let ctx = CustomContext::<String, String> {
             values: vec![],
-            table: "Investors",
+            table: "Інвестори",
             errors: errs,
             content: vec![],
         };
@@ -553,7 +553,7 @@ pub async fn investors_edit<'r>(conn: DBConnection, id: i32) -> Template {
         .unwrap();
     let ctx = CustomContext::<_, String> {
         values: vec![investor],
-        table: "Investors",
+        table: "Інвестори",
         errors: vec![],
         content: vec![],
     };
@@ -606,7 +606,7 @@ pub async fn investors_edit_post<'r>(
             .unwrap();
         let ctx = CustomContext::<_, String> {
             values: vec![investor],
-            table: "Investors",
+            table: "Інвестори",
             errors: errs,
             content: vec![],
         };
@@ -632,7 +632,7 @@ pub async fn staff(conn: DBConnection, id: Option<i32>) -> Template {
     }
     let ctx = CustomContext {
         values: StaffControl::get_staff(&conn).await.unwrap(),
-        table: "Staff",
+        table: "Працівники",
         errors: vec![],
         content: vec![content],
     };
@@ -644,7 +644,7 @@ pub async fn staff(conn: DBConnection, id: Option<i32>) -> Template {
 pub async fn staff_add() -> Template {
     let ctx = CustomContext::<String, String> {
         values: vec![],
-        table: "Staff",
+        table: "Працівники",
         errors: vec![],
         content: vec![],
     };
@@ -690,7 +690,7 @@ pub async fn staff_add_post<'r>(
     if !errs.is_empty() {
         let ctx = CustomContext::<String, String> {
             values: vec![],
-            table: "Staff",
+            table: "Працівники",
             errors: errs,
             content: vec![],
         };
@@ -707,7 +707,7 @@ pub async fn staff_edit<'r>(conn: DBConnection, id: i32) -> Template {
 
     let ctx = CustomContext::<_, String> {
         values: vec![staff],
-        table: "Staff",
+        table: "Працівники",
         errors: vec![],
         content: vec![],
     };
@@ -759,7 +759,7 @@ pub async fn staff_edit_post<'r>(
         staff.change_date_format("%d-%m-%Y", "%Y-%m-%d").unwrap();
         let ctx = CustomContext::<_, String> {
             values: vec![staff],
-            table: "Staff",
+            table: "Працівники",
             errors: errs,
             content: vec![],
         };
@@ -785,7 +785,7 @@ pub async fn users(conn: DBConnection, id: Option<i32>) -> Template {
     }
     let ctx = CustomContext {
         values: UsersControl::get_users(&conn).await.unwrap(),
-        table: "Users",
+        table: "Користувачі",
         errors: vec![],
         content: vec![content],
     };
@@ -797,7 +797,7 @@ pub async fn users(conn: DBConnection, id: Option<i32>) -> Template {
 pub async fn users_add() -> Template {
     let ctx = CustomContext::<String, String> {
         values: vec![],
-        table: "Users",
+        table: "Користувачі",
         errors: vec![],
         content: vec![],
     };
@@ -844,7 +844,7 @@ pub async fn users_add_post<'r>(
     if !errs.is_empty() {
         let ctx = CustomContext::<String, String> {
             values: vec![],
-            table: "Users",
+            table: "Користувачі",
             errors: errs,
             content: vec![],
         };
@@ -861,7 +861,7 @@ pub async fn users_edit<'r>(conn: DBConnection, id: i32) -> Template {
 
     let ctx = CustomContext::<_, String> {
         values: vec![users],
-        table: "Users",
+        table: "Користувачі",
         errors: vec![],
         content: vec![],
     };
@@ -914,7 +914,7 @@ pub async fn users_edit_post<'r>(
         users.change_date_format("%d-%m-%Y", "%Y-%m-%d").unwrap();
         let ctx = CustomContext::<_, String> {
             values: vec![users],
-            table: "Users",
+            table: "Користувачі",
             errors: errs,
             content: vec![],
         };
@@ -935,7 +935,7 @@ pub async fn users_delete_post<'r>(conn: DBConnection, id: i32) -> Result<Redire
 pub async fn donations(conn: DBConnection) -> Template {
     let ctx = CustomContext::<_, String> {
         values: DonationsControl::get_donations(&conn).await.unwrap(),
-        table: "Donations",
+        table: "Донати",
         errors: vec![],
         content: vec![],
     };
@@ -957,7 +957,7 @@ pub async fn donations_add(conn: DBConnection) -> Template {
 
     let ctx = CustomContext::<String, String> {
         values: vec![],
-        table: "Donations",
+        table: "Донати",
         errors: vec![],
         content: vec![users_id, users_name, games_id, games_name],
     };
@@ -1006,7 +1006,7 @@ pub async fn donations_add_post<'r>(
     if !errs.is_empty() {
         let ctx = CustomContext::<String, String> {
             values: vec![],
-            table: "Donations",
+            table: "Донати",
             errors: errs,
             content: vec![],
         };
@@ -1036,7 +1036,7 @@ pub async fn donations_edit<'r>(conn: DBConnection, id: i32) -> Template {
 
     let ctx = CustomContext::<_, String> {
         values: vec![donation],
-        table: "Donations",
+        table: "Донати",
         errors: vec![],
         content: vec![users_id, users_name, games_id, games_name],
     };
@@ -1090,7 +1090,7 @@ pub async fn donations_edit_post<'r>(
         donation.change_date_format("%d-%m-%Y", "%Y-%m-%d").unwrap();
         let ctx = CustomContext::<_, String> {
             values: vec![donation],
-            table: "Donations",
+            table: "Донати",
             errors: errs,
             content: vec![],
         };
@@ -1111,7 +1111,7 @@ pub async fn donations_delete_post<'r>(conn: DBConnection, id: i32) -> Result<Re
 pub async fn jobs(conn: DBConnection) -> Template {
     let ctx = CustomContext::<_, String> {
         values: JobsControl::get_jobs(&conn).await.unwrap(),
-        table: "Jobs",
+        table: "Позиції працівників",
         errors: vec![],
         content: vec![],
     };
@@ -1133,7 +1133,7 @@ pub async fn jobs_add(conn: DBConnection) -> Template {
 
     let ctx = CustomContext::<String, String> {
         values: vec![],
-        table: "Jobs",
+        table: "Позиції працівників",
         errors: vec![],
         content: vec![games_id, games_name, staff_id, staff_name],
     };
@@ -1179,7 +1179,7 @@ pub async fn jobs_add_post<'r>(
     if !errs.is_empty() {
         let ctx = CustomContext::<String, String> {
             values: vec![],
-            table: "Jobs",
+            table: "Позиції працівників",
             errors: errs,
             content: vec![],
         };
@@ -1205,7 +1205,7 @@ pub async fn jobs_edit<'r>(conn: DBConnection, id: i32) -> Template {
 
     let ctx = CustomContext::<_, String> {
         values: vec![job],
-        table: "Jobs",
+        table: "Позиції працівників",
         errors: vec![],
         content: vec![games_id, games_name, staff_id, staff_name],
     };
@@ -1254,7 +1254,7 @@ pub async fn jobs_edit_post<'r>(
         job.change_date_format("%d-%m-%Y", "%Y-%m-%d").unwrap();
         let ctx = CustomContext::<_, String> {
             values: vec![job],
-            table: "Jobs",
+            table: "Позиції працівників",
             errors: errs,
             content: vec![],
         };
@@ -1275,7 +1275,7 @@ pub async fn jobs_delete_post<'r>(conn: DBConnection, id: i32) -> Result<Redirec
 pub async fn investments(conn: DBConnection) -> Template {
     let ctx = CustomContext::<_, String> {
         values: InvestmentsControl::get_investments(&conn).await.unwrap(),
-        table: "Investments",
+        table: "Інвестиції",
         errors: vec![],
         content: vec![],
     };
@@ -1297,7 +1297,7 @@ pub async fn investments_add(conn: DBConnection) -> Template {
 
     let ctx = CustomContext::<String, String> {
         values: vec![],
-        table: "Investments",
+        table: "Інвестиції",
         errors: vec![],
         content: vec![games_id, games_name, investors_id, investors_name],
     };
@@ -1346,7 +1346,7 @@ pub async fn investments_add_post<'r>(
     if !errs.is_empty() {
         let ctx = CustomContext::<String, String> {
             values: vec![],
-            table: "Investments",
+            table: "Інвестиції",
             errors: errs,
             content: vec![],
         };
@@ -1373,7 +1373,7 @@ pub async fn investments_edit<'r>(conn: DBConnection, id: i32) -> Template {
 
     let ctx = CustomContext::<_, String> {
         values: vec![investment],
-        table: "Investments",
+        table: "Інвестиції",
         errors: vec![],
         content: vec![games_id, games_name, investors_id, investors_name],
     };
@@ -1427,7 +1427,7 @@ pub async fn investments_edit_post<'r>(
             .unwrap();
         let ctx = CustomContext::<_, String> {
             values: vec![investment],
-            table: "Investments",
+            table: "Інвестиції",
             errors: errs,
             content: vec![],
         };
